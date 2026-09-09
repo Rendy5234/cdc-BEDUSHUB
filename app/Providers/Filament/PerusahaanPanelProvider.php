@@ -18,27 +18,26 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class LoginAdminPanelProvider extends PanelProvider
+class PerusahaanPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('login-admin')
-            ->path('login-admin')
+            ->id('perusahaan')
+            ->path('perusahaan')
             ->login()
+            ->brandName('BEDUSHUB Perusahaan')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Emerald,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Perusahaan/Resources'), for: 'App\\Filament\\Perusahaan\\Resources')
+            ->discoverPages(in: app_path('Filament/Perusahaan/Pages'), for: 'App\\Filament\\Perusahaan\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Perusahaan/Widgets'), for: 'App\\Filament\\Perusahaan\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
