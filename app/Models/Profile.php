@@ -41,17 +41,17 @@ class Profile extends Model
 
     public function institusi(): BelongsTo
     {
-        return $this->belongsTo(Institusi::class);
+        return $this->belongsTo(Institusi::class)->withTrashed();
     }
 
     public function jurusan(): BelongsTo
     {
-        return $this->belongsTo(Jurusan::class);
+        return $this->belongsTo(Jurusan::class)->withTrashed();
     }
 
     public function prodi(): BelongsTo
     {
-        return $this->belongsTo(ProgramStudi::class, 'prodi_id');
+        return $this->belongsTo(ProgramStudi::class, 'prodi_id')->withTrashed();
     }
 
     public function userSkills(): HasMany

@@ -23,7 +23,7 @@ class ProgramStudi extends Model
 
     public function fakultas(): BelongsTo
     {
-        return $this->belongsTo(Fakultas::class);
+        return $this->belongsTo(Fakultas::class)->withTrashed();
     }
 
     public function profiles(): HasMany

@@ -28,4 +28,21 @@ class Asesmen extends Model
     {
         return $this->hasMany(AsesmenJawaban::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Asesmen $asesmen) {
+            if ($asesmen->isForceDeleting()) {
+                return;
+            }
+
+            $asesmen->asesmenSoals->each->delete();
+            $asesmen->asesmenJawabans->each->delete();
+        });
+
+        static::restoring(function (Asesmen $asesmen) {
+            $asesmen->asesmenSoals()->onlyTrashed()->get()->each->restore();
+            $asesmen->asesmenJawabans()->onlyTrashed()->get()->each->restore();
+        });
+    }
 }

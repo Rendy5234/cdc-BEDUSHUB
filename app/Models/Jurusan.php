@@ -22,7 +22,7 @@ class Jurusan extends Model
 
     public function institusi(): BelongsTo
     {
-        return $this->belongsTo(Institusi::class);
+        return $this->belongsTo(Institusi::class)->withTrashed();
     }
 
     public function profiles(): HasMany

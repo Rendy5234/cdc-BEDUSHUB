@@ -35,4 +35,21 @@ class Institusi extends Model
     {
         return $this->hasMany(Profile::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Institusi $institusi) {
+            if ($institusi->isForceDeleting()) {
+                return;
+            }
+
+            $institusi->fakultas->each->delete();
+            $institusi->jurusans->each->delete();
+        });
+
+        static::restoring(function (Institusi $institusi) {
+            $institusi->fakultas()->onlyTrashed()->get()->each->restore();
+            $institusi->jurusans()->onlyTrashed()->get()->each->restore();
+        });
+    }
 }

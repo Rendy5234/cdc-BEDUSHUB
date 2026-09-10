@@ -27,11 +27,26 @@ class AsesmenSoal extends Model
 
     public function asesmen(): BelongsTo
     {
-        return $this->belongsTo(Asesmen::class);
+        return $this->belongsTo(Asesmen::class)->withTrashed();
     }
 
     public function asesmenJawabans(): HasMany
     {
         return $this->hasMany(AsesmenJawaban::class, 'soal_id');
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (AsesmenSoal $asesmenSoal) {
+            if ($asesmenSoal->isForceDeleting()) {
+                return;
+            }
+
+            $asesmenSoal->asesmenJawabans->each->delete();
+        });
+
+        static::restoring(function (AsesmenSoal $asesmenSoal) {
+            $asesmenSoal->asesmenJawabans()->onlyTrashed()->get()->each->restore();
+        });
     }
 }

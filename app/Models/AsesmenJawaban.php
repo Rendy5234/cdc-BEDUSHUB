@@ -27,12 +27,12 @@ class AsesmenJawaban extends Model
 
     public function asesmen(): BelongsTo
     {
-        return $this->belongsTo(Asesmen::class);
+        return $this->belongsTo(Asesmen::class)->withTrashed();
     }
 
     public function soal(): BelongsTo
     {
-        return $this->belongsTo(AsesmenSoal::class, 'soal_id');
+        return $this->belongsTo(AsesmenSoal::class, 'soal_id')->withTrashed();
     }
 
     public function user(): BelongsTo

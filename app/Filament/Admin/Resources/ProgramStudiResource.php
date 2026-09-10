@@ -65,6 +65,10 @@ class ProgramStudiResource extends Resource
                     ->label('Institusi')
                     ->searchable()
                     ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -75,13 +79,26 @@ class ProgramStudiResource extends Resource
                     ]),
                 Tables\Filters\SelectFilter::make('fakultas_id')
                     ->relationship('fakultas', 'nama')
-                    ->label('Fakultas'),
+                    ->label('Fakultas')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                Tables\Actions\RestoreAction::make()
+                    ->label('Pulihkan'),
+                Tables\Actions\ForceDeleteAction::make()
+                    ->label('Hapus Permanen'),
             ])
+            ->recordUrl(
+                fn (ProgramStudi $record): ?string => $record->trashed()
+                    ? null
+                    : ProgramStudiResource::getUrl('edit', ['record' => $record]),
+            )
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

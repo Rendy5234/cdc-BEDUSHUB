@@ -21,11 +21,26 @@ class Fakultas extends Model
 
     public function institusi(): BelongsTo
     {
-        return $this->belongsTo(Institusi::class);
+        return $this->belongsTo(Institusi::class)->withTrashed();
     }
 
     public function programStudis(): HasMany
     {
         return $this->hasMany(ProgramStudi::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Fakultas $fakultas) {
+            if ($fakultas->isForceDeleting()) {
+                return;
+            }
+
+            $fakultas->programStudis->each->delete();
+        });
+
+        static::restoring(function (Fakultas $fakultas) {
+            $fakultas->programStudis()->onlyTrashed()->get()->each->restore();
+        });
     }
 }
