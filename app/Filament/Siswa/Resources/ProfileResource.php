@@ -3,6 +3,7 @@
 namespace App\Filament\Siswa\Resources;
 
 use App\Filament\Siswa\Resources\ProfileResource\Pages;
+use App\Filament\Siswa\Resources\ProfileResource\RelationManagers;
 use App\Models\Profile;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -109,7 +110,8 @@ class ProfileResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\SkillsRelationManager::class,
+            RelationManagers\MinatRelationManager::class,
         ];
     }
 

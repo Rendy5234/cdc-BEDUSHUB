@@ -106,6 +106,8 @@ class UserResource extends Resource
     {
         return [
             RelationManagers\ProfileRelationManager::class,
+            RelationManagers\SkillsRelationManager::class,
+            RelationManagers\MinatRelationManager::class,
         ];
     }
 

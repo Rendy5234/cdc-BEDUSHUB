@@ -122,6 +122,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsToMany(KategoriMinat::class, 'user_minat')->withTimestamps();
     }
 
+    public function userSkills(): HasMany
+    {
+        return $this->hasMany(UserSkill::class);
+    }
+
+    public function userMinat(): HasMany
+    {
+        return $this->hasMany(UserMinat::class);
+    }
+
     public function perusahaan(): HasOne
     {
         return $this->hasOne(Perusahaan::class);
