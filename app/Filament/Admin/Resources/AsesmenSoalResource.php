@@ -66,11 +66,17 @@ class AsesmenSoalResource extends Resource
                         'skala' => 'warning',
                         default => 'gray',
                     }),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('asesmen_id')
                     ->relationship('asesmen', 'judul')
-                    ->label('Asesmen'),
+                    ->label('Asesmen')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('tipe_jawaban')
                     ->options([
                         'pilihan_ganda' => 'Pilihan Ganda',

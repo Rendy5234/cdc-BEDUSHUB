@@ -29,24 +29,19 @@ class AsesmenJawabanResource extends Resource
             ->schema([
                 Forms\Components\Select::make('asesmen_id')
                     ->relationship('asesmen', 'judul')
-                    ->required()
                     ->searchable()
                     ->preload(),
                 Forms\Components\Select::make('soal_id')
                     ->relationship('soal', 'pertanyaan')
-                    ->required()
                     ->searchable()
                     ->preload()
                     ->getOptionLabelFromRecordUsing(fn ($record) => Str::limit($record->pertanyaan, 80)),
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name')
-                    ->required()
                     ->searchable()
                     ->preload(),
                 Forms\Components\Textarea::make('jawaban')
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('skor')
-                    ->numeric(),
             ]);
     }
 
@@ -67,8 +62,6 @@ class AsesmenJawabanResource extends Resource
                     ->tooltip(fn ($record) => $record->soal?->pertanyaan),
                 Tables\Columns\TextColumn::make('jawaban')
                     ->limit(50),
-                Tables\Columns\TextColumn::make('skor')
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -76,19 +69,17 @@ class AsesmenJawabanResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('asesmen')
-                    ->relationship('asesmen', 'judul'),
-                Tables\Filters\TrashedFilter::make(),
+                    ->relationship('asesmen', 'judul')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\SelectFilter::make('soal')
+                    ->relationship('soal', 'pertanyaan')
+                    ->searchable()
+                    ->preload()
+                    ->getOptionLabelFromRecordUsing(fn ($record) => Str::limit($record->pertanyaan, 80)),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                ]),
+                Tables\Actions\ViewAction::make(),
             ]);
     }
 
@@ -103,7 +94,6 @@ class AsesmenJawabanResource extends Resource
     {
         return [
             'index' => Pages\ListAsesmenJawabans::route('/'),
-            'edit' => Pages\EditAsesmenJawaban::route('/{record}/edit'),
         ];
     }
 }

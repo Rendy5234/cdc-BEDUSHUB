@@ -12,6 +12,8 @@ class AsesmenSoalsRelationManager extends RelationManager
 {
     protected static string $relationship = 'asesmenSoals';
 
+    protected static ?string $title = 'Asesmen Soal';
+
     public function form(Form $form): Form
     {
         return $form
@@ -48,6 +50,10 @@ class AsesmenSoalsRelationManager extends RelationManager
                         'skala' => 'warning',
                         default => 'gray',
                     }),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

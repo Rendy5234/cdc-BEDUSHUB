@@ -64,6 +64,10 @@ class AsesmenResource extends Resource
                     ->label('Jumlah Soal')
                     ->counts('asesmenSoals')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('tipe')
