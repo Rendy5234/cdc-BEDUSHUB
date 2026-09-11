@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\UserResource\RelationManagers;
 
+use App\Enums\Jenjang;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -25,12 +26,7 @@ class ProfileRelationManager extends RelationManager
                 Forms\Components\TextInput::make('domisili_kecamatan')
                     ->maxLength(255),
                 Forms\Components\Select::make('jenjang')
-                    ->options([
-                        'smk' => 'SMK',
-                        'd3' => 'D3',
-                        's1' => 'S1',
-                        'alumni' => 'Alumni',
-                    ]),
+                    ->options(Jenjang::labels()),
                 Forms\Components\Select::make('institusi_id')
                     ->relationship('institusi', 'nama')
                     ->searchable()
@@ -69,7 +65,8 @@ class ProfileRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('jenis_kelamin')
                     ->formatStateUsing(fn (?string $state): string => $state === 'l' ? 'Laki-laki' : ($state === 'p' ? 'Perempuan' : '-')),
-                Tables\Columns\TextColumn::make('jenjang'),
+                Tables\Columns\TextColumn::make('jenjang')
+                    ->formatStateUsing(fn (?string $state): string => $state ? (Jenjang::tryFrom($state)?->getLabel() ?? $state) : '-'),
                 Tables\Columns\TextColumn::make('institusi.nama'),
                 Tables\Columns\TextColumn::make('jurusan.nama'),
                 Tables\Columns\TextColumn::make('prodi.nama'),

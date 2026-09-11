@@ -31,7 +31,7 @@ class ProgramStudiImporter extends Importer
             ImportColumn::make('jenjang')
                 ->label('Jenjang')
                 ->requiredMapping()
-                ->rules(['required', Rule::in(['d3', 's1'])])
+                ->rules(['required', Rule::in(['d3', 's1', 's2', 's3'])])
                 ->castStateUsing(fn ($state): ?string => is_string($state) ? strtolower($state) : $state)
                 ->example('s1'),
             ImportColumn::make('institusi')

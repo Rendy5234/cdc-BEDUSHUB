@@ -34,6 +34,16 @@ class AsesmenSoalResource extends Resource
                 Forms\Components\Textarea::make('pertanyaan')
                     ->required()
                     ->columnSpanFull(),
+                Forms\Components\Select::make('skill_id')
+                    ->label('Skill')
+                    ->relationship('skill', 'nama')
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\Select::make('kategori_minat_id')
+                    ->label('Kategori Minat')
+                    ->relationship('kategoriMinat', 'nama')
+                    ->searchable()
+                    ->preload(),
                 Forms\Components\Select::make('tipe_jawaban')
                     ->options([
                         'pilihan_ganda' => 'Pilihan Ganda',
@@ -66,6 +76,14 @@ class AsesmenSoalResource extends Resource
                         'skala' => 'warning',
                         default => 'gray',
                     }),
+                Tables\Columns\TextColumn::make('skill.nama')
+                    ->label('Skill')
+                    ->badge()
+                    ->color('info'),
+                Tables\Columns\TextColumn::make('kategoriMinat.nama')
+                    ->label('Minat')
+                    ->badge()
+                    ->color('warning'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -83,6 +101,16 @@ class AsesmenSoalResource extends Resource
                         'skala' => 'Skala',
                         'teks' => 'Teks',
                     ]),
+                Tables\Filters\SelectFilter::make('skill_id')
+                    ->relationship('skill', 'nama')
+                    ->label('Skill')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\SelectFilter::make('kategori_minat_id')
+                    ->relationship('kategoriMinat', 'nama')
+                    ->label('Kategori Minat')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([

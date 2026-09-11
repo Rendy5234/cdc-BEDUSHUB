@@ -2,6 +2,7 @@
 
 namespace App\Filament\Perusahaan\Resources;
 
+use App\Enums\Jenjang;
 use App\Filament\Perusahaan\Resources\LowonganResource\Pages;
 use App\Models\Lowongan;
 use Filament\Forms;
@@ -53,9 +54,26 @@ class LowonganResource extends Resource
                     ])
                     ->default('aktif')
                     ->required(),
+                Forms\Components\FileUpload::make('thumbnail')
+                    ->image()
+                    ->directory('lowongan'),
+                Forms\Components\DatePicker::make('tanggal_mulai'),
+                Forms\Components\TextInput::make('kuota')
+                    ->numeric()
+                    ->minValue(0),
+                Forms\Components\Select::make('pendidikan')
+                    ->options(Jenjang::labels())
+                    ->searchable(),
+                Forms\Components\Select::make('minat')
+                    ->relationship('minat', 'nama')
+                    ->multiple()
+                    ->preload()
+                    ->label('Kategori Minat'),
                 Forms\Components\Textarea::make('deskripsi')
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('kualifikasi')
+                    ->columnSpanFull(),
+                Forms\Components\Textarea::make('benefit')
                     ->columnSpanFull(),
             ]);
     }
@@ -71,6 +89,15 @@ class LowonganResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('lokasi')
                     ->searchable(),
+                Tables\Columns\ImageColumn::make('thumbnail')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('kuota')
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('tanggal_mulai')
+                    ->date()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => $state === 'aktif' ? 'success' : 'danger'),

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\SkillLevel;
 use App\Filament\Admin\Resources\PelatihanResource\Pages;
 use App\Filament\Admin\Resources\PelatihanResource\RelationManagers;
 use App\Models\Pelatihan;
@@ -33,8 +34,11 @@ class PelatihanResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('topik')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('level')
-                    ->maxLength(255),
+                Forms\Components\Select::make('level')
+                    ->label('Level')
+                    ->options(SkillLevel::labels())
+                    ->default(SkillLevel::PEMULA->value)
+                    ->required(),
                 Forms\Components\TextInput::make('instruktur')
                     ->maxLength(255),
                 Forms\Components\DatePicker::make('tanggal_mulai'),
@@ -42,6 +46,11 @@ class PelatihanResource extends Resource
                 Forms\Components\TextInput::make('kuota')
                     ->numeric()
                     ->minValue(0),
+                Forms\Components\Select::make('minat')
+                    ->relationship('minat', 'nama')
+                    ->multiple()
+                    ->preload()
+                    ->label('Kategori Minat'),
                 Forms\Components\Select::make('status')
                     ->options([
                         'draft' => 'Draft',
@@ -64,7 +73,16 @@ class PelatihanResource extends Resource
                 Tables\Columns\TextColumn::make('topik')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('level')
-                    ->searchable(),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pemula' => 'info',
+                        'menengah' => 'warning',
+                        'mahir' => 'success',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => $state
+                        ? (SkillLevel::tryFrom($state)?->getLabel() ?? $state)
+                        : '-'),
                 Tables\Columns\TextColumn::make('instruktur')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kuota')
@@ -83,6 +101,8 @@ class PelatihanResource extends Resource
                         'draft' => 'Draft',
                         'published' => 'Published',
                     ]),
+                Tables\Filters\SelectFilter::make('level')
+                    ->options(SkillLevel::labels()),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\Jenjang;
 use App\Filament\Admin\Resources\ProgramStudiResource\Pages;
 use App\Models\ProgramStudi;
 use Filament\Forms;
@@ -37,10 +38,7 @@ class ProgramStudiResource extends Resource
                 Forms\Components\TextInput::make('kode')
                     ->maxLength(255),
                 Forms\Components\Select::make('jenjang')
-                    ->options([
-                        'd3' => 'D3',
-                        's1' => 'S1',
-                    ])
+                    ->options(Jenjang::tertiaryLabels())
                     ->required(),
             ]);
     }
@@ -56,7 +54,13 @@ class ProgramStudiResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jenjang')
                     ->badge()
-                    ->color(fn (string $state): string => $state === 's1' ? 'success' : 'info'),
+                    ->formatStateUsing(fn (?string $state): string => $state ? (Jenjang::tryFrom($state)?->getLabel() ?? $state) : '-')
+                    ->color(fn (string $state): string => match ($state) {
+                        's1' => 'success',
+                        's2' => 'warning',
+                        's3' => 'danger',
+                        default => 'info',
+                    }),
                 Tables\Columns\TextColumn::make('fakultas.nama')
                     ->label('Fakultas')
                     ->searchable()
@@ -73,10 +77,7 @@ class ProgramStudiResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('jenjang')
-                    ->options([
-                        'd3' => 'D3',
-                        's1' => 'S1',
-                    ]),
+                    ->options(Jenjang::tertiaryLabels()),
                 Tables\Filters\SelectFilter::make('fakultas_id')
                     ->relationship('fakultas', 'nama')
                     ->label('Fakultas')

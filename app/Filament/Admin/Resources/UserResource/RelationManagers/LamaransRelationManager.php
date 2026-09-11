@@ -1,41 +1,34 @@
 <?php
 
-namespace App\Filament\Siswa\Resources;
+namespace App\Filament\Admin\Resources\UserResource\RelationManagers;
 
-use App\Filament\Siswa\Resources\LamaranResource\Pages;
-use App\Models\Lamaran;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
-class LamaranResource extends Resource
+class LamaransRelationManager extends RelationManager
 {
-    protected static ?string $model = Lamaran::class;
+    protected static string $relationship = 'lamarans';
 
-    protected static ?string $navigationIcon = 'heroicon-o-inbox';
-
-    protected static ?string $navigationGroup = 'Karier & Pelatihan';
-
-    protected static ?string $modelLabel = 'Lamaran';
-
-    protected static ?string $pluralModelLabel = 'Lamaran';
-
-    public static function form(Form $form): Form
+    public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Hidden::make('user_id')
-                    ->default(fn () => auth()->id()),
                 Forms\Components\Select::make('lowongan_id')
-                    ->relationship('lowongan', 'judul', fn (Builder $query) => $query->tersediaUntukUser())
+                    ->relationship('lowongan', 'judul')
                     ->required()
                     ->searchable()
                     ->preload(),
-                Forms\Components\Hidden::make('status')
-                    ->default('diproses'),
+                Forms\Components\Select::make('status')
+                    ->options([
+                        'diproses' => 'Diproses',
+                        'diterima' => 'Diterima',
+                        'ditolak' => 'Ditolak',
+                    ])
+                    ->default('diproses')
+                    ->required(),
                 Forms\Components\FileUpload::make('cv')
                     ->label('CV')
                     ->directory('lamaran/cv'),
@@ -44,17 +37,15 @@ class LamaranResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
+    public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('lowongan_id')
             ->columns([
                 Tables\Columns\TextColumn::make('lowongan.judul')
                     ->label('Lowongan')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('lowongan.perusahaan.nama')
-                    ->label('Perusahaan')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -74,6 +65,9 @@ class LamaranResource extends Resource
                         'ditolak' => 'Ditolak',
                     ]),
             ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make(),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -83,27 +77,5 @@ class LamaranResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->where('user_id', auth()->id());
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListLamarans::route('/'),
-            'create' => Pages\CreateLamaran::route('/create'),
-            'edit' => Pages\EditLamaran::route('/{record}/edit'),
-        ];
     }
 }

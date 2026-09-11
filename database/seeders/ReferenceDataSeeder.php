@@ -106,6 +106,24 @@ class ReferenceDataSeeder extends Seeder
             KategoriMinat::create($m);
         }
 
+        $minatSkills = [
+            'Teknologi Informasi' => ['PHP', 'Laravel', 'JavaScript', 'React', 'Vue.js', 'MySQL', 'PostgreSQL', 'Python', 'Jaringan Komputer', 'Analisis Data'],
+            'Desain & Kreatif' => ['UI/UX Design'],
+            'Pemasaran Digital' => ['Digital Marketing', 'Analisis Data'],
+            'Bisnis & Wirausaha' => ['Komunikasi', 'Leadership'],
+            'Pendidikan' => ['Komunikasi', 'Leadership'],
+            'Teknik & Rekayasa' => ['Jaringan Komputer', 'Python'],
+            'Keuangan & Akuntansi' => ['Microsoft Office', 'Analisis Data'],
+        ];
+        foreach ($minatSkills as $namaMinat => $namaSkills) {
+            $minat = KategoriMinat::where('nama', $namaMinat)->first();
+            if (! $minat) {
+                continue;
+            }
+
+            $minat->skills()->sync(Skill::whereIn('nama', $namaSkills)->pluck('id'));
+        }
+
         $sektorPertanian = SektorUnggulan::create(['nama' => 'Pertanian', 'kategori' => 'Agribisnis', 'kecamatan' => 'Bedus', 'ikon' => 'plant', 'deskripsi' => 'Sektor pertanian dan hortikultura.']);
         $sektorPerikanan = SektorUnggulan::create(['nama' => 'Perikanan & Kelautan', 'kategori' => 'Perikanan', 'kecamatan' => 'Pesisir', 'ikon' => 'fish', 'deskripsi' => 'Sektor perikanan tangkap dan budidaya.']);
         $sektorPariwisata = SektorUnggulan::create(['nama' => 'Pariwisata', 'kategori' => 'Jasa', 'kecamatan' => 'Bedus', 'ikon' => 'map', 'deskripsi' => 'Destinasi wisata alam dan budaya.']);
@@ -127,6 +145,19 @@ class ReferenceDataSeeder extends Seeder
         ];
         foreach ($potensi as $p) {
             PotensiDaerah::create($p);
+        }
+
+        $potensiSkills = [
+            'Startup Digital Lokal' => ['Laravel', 'React', 'UI/UX Design'],
+            'Pasar Rakyat Digital' => ['Digital Marketing'],
+        ];
+        foreach ($potensiSkills as $namaPotensi => $namaSkills) {
+            $potensi = PotensiDaerah::where('nama', $namaPotensi)->first();
+            if (! $potensi) {
+                continue;
+            }
+
+            $potensi->skills()->sync(Skill::whereIn('nama', $namaSkills)->pluck('id'));
         }
 
         $pengaturan = [

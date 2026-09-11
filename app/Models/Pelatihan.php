@@ -46,4 +46,9 @@ class Pelatihan extends Model
     {
         return $this->belongsToMany(Skill::class, 'pelatihan_skill')->withTimestamps();
     }
+
+    public function minat(): BelongsToMany
+    {
+        return $this->belongsToMany(KategoriMinat::class, 'pelatihan_minat')->withTimestamps();
+    }
 }

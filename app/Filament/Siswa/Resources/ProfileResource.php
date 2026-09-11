@@ -2,6 +2,7 @@
 
 namespace App\Filament\Siswa\Resources;
 
+use App\Enums\Jenjang;
 use App\Filament\Siswa\Resources\ProfileResource\Pages;
 use App\Filament\Siswa\Resources\ProfileResource\RelationManagers;
 use App\Models\Profile;
@@ -39,12 +40,7 @@ class ProfileResource extends Resource
                 Forms\Components\TextInput::make('domisili_kecamatan')
                     ->maxLength(255),
                 Forms\Components\Select::make('jenjang')
-                    ->options([
-                        'smk' => 'SMK',
-                        'd3' => 'D3',
-                        's1' => 'S1',
-                        'alumni' => 'Alumni',
-                    ]),
+                    ->options(Jenjang::labels()),
                 Forms\Components\Select::make('institusi_id')
                     ->relationship('institusi', 'nama')
                     ->searchable()
@@ -82,7 +78,8 @@ class ProfileResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('jenis_kelamin')
                     ->formatStateUsing(fn (?string $state): string => $state === 'l' ? 'Laki-laki' : ($state === 'p' ? 'Perempuan' : '-')),
-                Tables\Columns\TextColumn::make('jenjang'),
+                Tables\Columns\TextColumn::make('jenjang')
+                    ->formatStateUsing(fn (?string $state): string => $state ? (Jenjang::tryFrom($state)?->getLabel() ?? $state) : '-'),
                 Tables\Columns\TextColumn::make('institusi.nama'),
                 Tables\Columns\TextColumn::make('jurusan.nama'),
                 Tables\Columns\TextColumn::make('prodi.nama'),

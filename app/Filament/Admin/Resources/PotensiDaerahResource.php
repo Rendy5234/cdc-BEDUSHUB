@@ -40,7 +40,12 @@ class PotensiDaerahResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('peluang_usaha')
                     ->columnSpanFull(),
-                Forms\Components\KeyValue::make('kebutuhan_skill')
+                Forms\Components\Select::make('skills')
+                    ->relationship('skills', 'nama')
+                    ->multiple()
+                    ->preload()
+                    ->searchable()
+                    ->label('Skill Dibutuhkan')
                     ->columnSpanFull(),
             ]);
     }
@@ -58,11 +63,20 @@ class PotensiDaerahResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('lokasi_kecamatan')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('skills.nama')
+                    ->label('Skill')
+                    ->badge()
+                    ->color('info'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('sektor_id')
                     ->relationship('sektor', 'nama')
                     ->label('Sektor'),
+                Tables\Filters\SelectFilter::make('skills')
+                    ->relationship('skills', 'nama')
+                    ->label('Skill')
+                    ->multiple()
+                    ->preload(),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([

@@ -28,4 +28,19 @@ class KategoriMinat extends Model
     {
         return $this->belongsToMany(User::class, 'user_minat')->withTimestamps();
     }
+
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'kategori_minat_skill')->withTimestamps();
+    }
+
+    public function lowongans(): BelongsToMany
+    {
+        return $this->belongsToMany(Lowongan::class, 'lowongan_minat')->withTimestamps();
+    }
+
+    public function pelatihans(): BelongsToMany
+    {
+        return $this->belongsToMany(Pelatihan::class, 'pelatihan_minat')->withTimestamps();
+    }
 }

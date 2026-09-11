@@ -16,6 +16,8 @@ class AsesmenSoal extends Model
 
     protected $fillable = [
         'asesmen_id',
+        'skill_id',
+        'kategori_minat_id',
         'pertanyaan',
         'tipe_jawaban',
         'opsi',
@@ -33,6 +35,16 @@ class AsesmenSoal extends Model
     public function asesmenJawabans(): HasMany
     {
         return $this->hasMany(AsesmenJawaban::class, 'soal_id');
+    }
+
+    public function skill(): BelongsTo
+    {
+        return $this->belongsTo(Skill::class)->withTrashed();
+    }
+
+    public function kategoriMinat(): BelongsTo
+    {
+        return $this->belongsTo(KategoriMinat::class)->withTrashed();
     }
 
     protected static function booted(): void

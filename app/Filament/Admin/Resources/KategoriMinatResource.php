@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\KategoriMinatResource\Pages;
+use App\Filament\Admin\Resources\KategoriMinatResource\RelationManagers;
 use App\Models\KategoriMinat;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -79,7 +80,7 @@ class KategoriMinatResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\SkillsRelationManager::class,
         ];
     }
 

@@ -25,7 +25,12 @@ class PotensiDaerahsRelationManager extends RelationManager
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('peluang_usaha')
                     ->columnSpanFull(),
-                Forms\Components\KeyValue::make('kebutuhan_skill')
+                Forms\Components\Select::make('skills')
+                    ->relationship('skills', 'nama')
+                    ->multiple()
+                    ->preload()
+                    ->searchable()
+                    ->label('Skill Dibutuhkan')
                     ->columnSpanFull(),
             ]);
     }

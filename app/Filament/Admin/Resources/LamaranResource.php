@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class LamaranResource extends Resource
 {
@@ -64,12 +65,13 @@ class LamaranResource extends Resource
                     ->label('Pelamar')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\SelectColumn::make('status')
-                    ->options([
-                        'diproses' => 'Diproses',
-                        'diterima' => 'Diterima',
-                        'ditolak' => 'Ditolak',
-                    ]),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'diterima' => 'success',
+                        'ditolak' => 'danger',
+                        default => 'warning',
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
@@ -83,19 +85,10 @@ class LamaranResource extends Resource
                     ]),
                 Tables\Filters\SelectFilter::make('lowongan_id')
                     ->relationship('lowongan', 'judul')
-                    ->label('Lowongan'),
+                    ->label('Lowongan')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\TrashedFilter::make(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                ]),
             ]);
     }
 
@@ -106,12 +99,50 @@ class LamaranResource extends Resource
         ];
     }
 
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canForceDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canForceDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canRestore(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canRestoreAny(): bool
+    {
+        return false;
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListLamarans::route('/'),
-            'create' => Pages\CreateLamaran::route('/create'),
-            'edit' => Pages\EditLamaran::route('/{record}/edit'),
         ];
     }
 }

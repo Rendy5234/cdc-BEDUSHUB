@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PerusahaanResource\Pages;
+use App\Filament\Admin\Resources\PerusahaanResource\RelationManagers;
 use App\Models\Perusahaan;
 use App\Models\User;
 use Filament\Forms;
@@ -105,7 +106,7 @@ class PerusahaanResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\LowongansRelationManager::class,
         ];
     }
 

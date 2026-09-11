@@ -7,6 +7,8 @@ use App\Models\Lamaran;
 use App\Models\Lowongan;
 use App\Models\Pelatihan;
 use App\Models\Perusahaan;
+use App\Models\RekomendasiLog;
+use App\Models\Skill;
 use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -49,6 +51,16 @@ class StatsOverview extends StatsOverviewWidget
                 ->description('Paket asesmen tersedia')
                 ->descriptionIcon('heroicon-m-clipboard-document-check')
                 ->color('gray'),
+
+            Stat::make('Skill Terdaftar', Skill::query()->count())
+                ->description('Skill untuk pemetaan rekomendasi')
+                ->descriptionIcon('heroicon-m-sparkles')
+                ->color('violet'),
+
+            Stat::make('Rekomendasi Diberikan', RekomendasiLog::query()->count())
+                ->description('Total log rekomendasi tersimpan')
+                ->descriptionIcon('heroicon-m-arrow-trending-up')
+                ->color('fuchsia'),
         ];
     }
 }

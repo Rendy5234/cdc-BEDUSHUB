@@ -108,6 +108,10 @@ class UserResource extends Resource
             RelationManagers\ProfileRelationManager::class,
             RelationManagers\SkillsRelationManager::class,
             RelationManagers\MinatRelationManager::class,
+            RelationManagers\LamaransRelationManager::class,
+            RelationManagers\PendaftaranPelatihansRelationManager::class,
+            RelationManagers\TracerStudiesRelationManager::class,
+            RelationManagers\AsesmenJawabansRelationManager::class,
         ];
     }
 

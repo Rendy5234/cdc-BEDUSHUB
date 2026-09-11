@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\SkillResource\Pages;
+use App\Filament\Admin\Resources\SkillResource\RelationManagers;
 use App\Models\Skill;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -80,7 +81,7 @@ class SkillResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\KategoriMinatsRelationManager::class,
         ];
     }
 
