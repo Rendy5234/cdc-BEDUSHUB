@@ -5,11 +5,14 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\UserResource\Pages;
 use App\Filament\Admin\Resources\UserResource\RelationManagers;
 use App\Models\User;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
@@ -50,6 +53,21 @@ class UserResource extends Resource
                     ->dehydrated(fn (?string $state): bool => filled($state))
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->maxLength(255),
+                Forms\Components\TextInput::make('confirm_password')
+                    ->label('Password Admin')
+                    ->helperText('Masukkan password akun Anda untuk menyimpan perubahan.')
+                    ->password()
+                    ->autocomplete('current-password')
+                    ->dehydrated(false)
+                    ->visibleOn('edit')
+                    ->required()
+                    ->rules([
+                        fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                            if (! Hash::check($value, auth()->user()->password)) {
+                                $fail('Password yang Anda masukkan salah.');
+                            }
+                        },
+                    ]),
             ]);
     }
 
@@ -90,15 +108,76 @@ class UserResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn (User $record): bool => ! $record->trashed()),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\Action::make('delete')
+                    ->label('Hapus')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->visible(fn (User $record): bool => ! $record->trashed())
+                    ->modalHeading('Konfirmasi hapus')
+                    ->modalDescription('Masukkan password akun Anda untuk menghapus data pengguna ini.')
+                    ->modalSubmitActionLabel('Hapus')
+                    ->form([static::passwordField()])
+                    ->action(fn (User $record): mixed => $record->delete()),
+                Tables\Actions\Action::make('forceDelete')
+                    ->label('Hapus permanen')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->visible(fn (User $record): bool => $record->trashed())
+                    ->modalHeading('Konfirmasi hapus permanen')
+                    ->modalDescription('Masukkan password akun Anda untuk menghapus permanen data pengguna ini.')
+                    ->modalSubmitActionLabel('Hapus permanen')
+                    ->form([static::passwordField()])
+                    ->action(fn (User $record): mixed => $record->forceDelete()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('delete')
+                        ->label('Hapus')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->modalHeading('Konfirmasi hapus')
+                        ->modalDescription('Masukkan password akun Anda untuk menghapus data terpilih.')
+                        ->modalSubmitActionLabel('Hapus')
+                        ->form([static::passwordField()])
+                        ->action(function (Collection $records): void {
+                            $records->each(
+                                fn (User $record) => $record->delete(),
+                            );
+                        }),
+                    Tables\Actions\BulkAction::make('forceDelete')
+                        ->label('Hapus permanen')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->modalHeading('Konfirmasi hapus permanen')
+                        ->modalDescription('Masukkan password akun Anda untuk menghapus permanen data terpilih.')
+                        ->modalSubmitActionLabel('Hapus permanen')
+                        ->form([static::passwordField()])
+                        ->action(function (Collection $records): void {
+                            $records->each(
+                                fn (User $record) => $record->forceDelete(),
+                            );
+                        }),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function passwordField(): Forms\Components\TextInput
+    {
+        return Forms\Components\TextInput::make('password')
+            ->label('Password')
+            ->password()
+            ->required()
+            ->autocomplete('current-password')
+            ->rules([
+                fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
+                    if (! Hash::check($value, auth()->user()->password)) {
+                        $fail('Password yang Anda masukkan salah.');
+                    }
+                },
             ]);
     }
 

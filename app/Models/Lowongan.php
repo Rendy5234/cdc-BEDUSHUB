@@ -77,4 +77,21 @@ class Lowongan extends Model
             ->where('status', 'aktif')
             ->whereHas('perusahaan', fn (Builder $q) => $q->where('status_kerjasama', 'aktif'));
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Lowongan $lowongan) {
+            if ($lowongan->isForceDeleting()) {
+                return;
+            }
+
+            $lowongan->lamarans->each->delete();
+            $lowongan->lowonganSkills->each->delete();
+        });
+
+        static::restoring(function (Lowongan $lowongan) {
+            $lowongan->lamarans()->onlyTrashed()->get()->each->restore();
+            $lowongan->lowonganSkills()->onlyTrashed()->get()->each->restore();
+        });
+    }
 }

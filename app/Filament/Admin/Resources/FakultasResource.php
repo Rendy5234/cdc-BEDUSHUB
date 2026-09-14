@@ -18,6 +18,8 @@ class FakultasResource extends Resource
 
     protected static ?string $navigationGroup = 'Data Master';
 
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $modelLabel = 'Fakultas';
 
     protected static ?string $pluralModelLabel = 'Fakultas';
@@ -27,7 +29,7 @@ class FakultasResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('institusi_id')
-                    ->relationship('institusi', 'nama')
+                    ->relationship('institusi', 'nama', fn ($query) => $query->withoutTrashed())
                     ->required()
                     ->searchable()
                     ->preload(),
@@ -59,7 +61,7 @@ class FakultasResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('institusi_id')
-                    ->relationship('institusi', 'nama')
+                    ->relationship('institusi', 'nama', fn ($query) => $query->withoutTrashed())
                     ->label('Institusi')
                     ->searchable()
                     ->preload(),

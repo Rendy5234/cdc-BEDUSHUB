@@ -13,8 +13,16 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
-            Actions\ForceDeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->modalHeading('Konfirmasi hapus')
+                ->modalDescription('Masukkan password akun Anda untuk menghapus data pengguna ini.')
+                ->modalSubmitActionLabel('Hapus')
+                ->form([UserResource::passwordField()]),
+            Actions\ForceDeleteAction::make()
+                ->modalHeading('Konfirmasi hapus permanen')
+                ->modalDescription('Masukkan password akun Anda untuk menghapus permanen data pengguna ini.')
+                ->modalSubmitActionLabel('Hapus permanen')
+                ->form([UserResource::passwordField()]),
             Actions\RestoreAction::make(),
         ];
     }

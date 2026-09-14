@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class PerusahaanResource extends Resource
 {
@@ -78,9 +79,12 @@ class PerusahaanResource extends Resource
                 Tables\Columns\TextColumn::make('user.email')
                     ->label('Email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('status_kerjasama')
-                    ->badge()
-                    ->color(fn (string $state): string => $state === 'aktif' ? 'success' : 'danger'),
+                Tables\Columns\SelectColumn::make('status_kerjasama')
+                    ->label('Status Kerja Sama')
+                    ->options([
+                        'aktif' => 'Aktif',
+                        'nonaktif' => 'Nonaktif',
+                    ]),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status_kerjasama')
@@ -88,19 +92,50 @@ class PerusahaanResource extends Resource
                         'aktif' => 'Aktif',
                         'nonaktif' => 'Nonaktif',
                     ]),
-                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                ]),
+                Tables\Actions\ViewAction::make(),
             ]);
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canForceDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canForceDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canRestore(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canRestoreAny(): bool
+    {
+        return false;
     }
 
     public static function getRelations(): array
@@ -114,8 +149,7 @@ class PerusahaanResource extends Resource
     {
         return [
             'index' => Pages\ListPerusahaans::route('/'),
-            'create' => Pages\CreatePerusahaan::route('/create'),
-            'edit' => Pages\EditPerusahaan::route('/{record}/edit'),
+            'view' => Pages\ViewPerusahaan::route('/{record}'),
         ];
     }
 }

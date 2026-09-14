@@ -27,7 +27,7 @@ class TracerStudyResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('user_id')
-                    ->relationship('user', 'name')
+                    ->relationship('user', 'name', fn ($query) => $query->withoutTrashed())
                     ->required()
                     ->searchable()
                     ->preload(),
@@ -88,9 +88,20 @@ class TracerStudyResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                Tables\Actions\RestoreAction::make()
+                    ->label('Pulihkan'),
+                Tables\Actions\ForceDeleteAction::make()
+                    ->label('Hapus Permanen'),
             ])
+            ->recordUrl(
+                fn (TracerStudy $record): ?string => $record->trashed()
+                    ? null
+                    : TracerStudyResource::getUrl('edit', ['record' => $record]),
+            )
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

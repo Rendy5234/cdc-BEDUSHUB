@@ -8,8 +8,6 @@ use App\Filament\Admin\Resources\LowonganResource\RelationManagers;
 use App\Models\Lowongan;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -86,41 +84,6 @@ class LowonganResource extends Resource
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
-    {
-        return $infolist
-            ->schema([
-                Infolists\Components\TextEntry::make('perusahaan.nama')
-                    ->label('Perusahaan'),
-                Infolists\Components\TextEntry::make('judul'),
-                Infolists\Components\ImageEntry::make('thumbnail')
-                    ->label('Thumbnail'),
-                Infolists\Components\TextEntry::make('tipe_pekerjaan'),
-                Infolists\Components\TextEntry::make('lokasi'),
-                Infolists\Components\TextEntry::make('gaji_min')
-                    ->formatStateUsing(fn ($state) => $state === null ? '—' : 'Rp ' . number_format((int) $state, 0, ',', '.')),
-                Infolists\Components\TextEntry::make('gaji_max')
-                    ->formatStateUsing(fn ($state) => $state === null ? '—' : 'Rp ' . number_format((int) $state, 0, ',', '.')),
-                Infolists\Components\TextEntry::make('tanggal_berakhir')
-                    ->date(),
-                Infolists\Components\TextEntry::make('tanggal_mulai')
-                    ->date(),
-                Infolists\Components\TextEntry::make('kuota'),
-                Infolists\Components\TextEntry::make('pendidikan')
-                    ->formatStateUsing(fn (?string $state): string => $state ? (Jenjang::tryFrom($state)?->getLabel() ?? $state) : '—'),
-                Infolists\Components\TextEntry::make('status')
-                    ->badge()
-                    ->color(fn (string $state): string => $state === 'aktif' ? 'success' : 'danger'),
-                Infolists\Components\TextEntry::make('deskripsi')
-                    ->columnSpanFull(),
-                Infolists\Components\TextEntry::make('kualifikasi')
-                    ->columnSpanFull(),
-                Infolists\Components\TextEntry::make('benefit')
-                    ->label('Benefit')
-                    ->columnSpanFull(),
-            ]);
-    }
-
     public static function table(Table $table): Table
     {
         return $table
@@ -154,7 +117,6 @@ class LowonganResource extends Resource
                     ->label('Perusahaan')
                     ->searchable()
                     ->preload(),
-                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

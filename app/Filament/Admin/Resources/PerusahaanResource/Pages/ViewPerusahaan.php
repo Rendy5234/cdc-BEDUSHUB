@@ -3,9 +3,9 @@
 namespace App\Filament\Admin\Resources\PerusahaanResource\Pages;
 
 use App\Filament\Admin\Resources\PerusahaanResource;
-use Filament\Resources\Pages\CreateRecord;
+use Filament\Resources\Pages\ViewRecord;
 
-class CreatePerusahaan extends CreateRecord
+class ViewPerusahaan extends ViewRecord
 {
     protected static string $resource = PerusahaanResource::class;
 }

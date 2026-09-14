@@ -88,7 +88,6 @@ class LamaranResource extends Resource
                     ->label('Lowongan')
                     ->searchable()
                     ->preload(),
-                Tables\Filters\TrashedFilter::make(),
             ]);
     }
 

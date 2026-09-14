@@ -64,9 +64,20 @@ class SektorUnggulanResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                Tables\Actions\RestoreAction::make()
+                    ->label('Pulihkan'),
+                Tables\Actions\ForceDeleteAction::make()
+                    ->label('Hapus Permanen'),
             ])
+            ->recordUrl(
+                fn (SektorUnggulan $record): ?string => $record->trashed()
+                    ? null
+                    : SektorUnggulanResource::getUrl('edit', ['record' => $record]),
+            )
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

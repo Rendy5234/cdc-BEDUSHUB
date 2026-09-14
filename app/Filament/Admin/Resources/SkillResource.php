@@ -19,6 +19,8 @@ class SkillResource extends Resource
 
     protected static ?string $navigationGroup = 'Data Master';
 
+    protected static ?int $navigationSort = 6;
+
     protected static ?string $modelLabel = 'Skill';
 
     protected static ?string $pluralModelLabel = 'Skill';

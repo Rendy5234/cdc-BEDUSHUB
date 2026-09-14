@@ -2,8 +2,6 @@
 
 namespace App\Filament\Admin\Resources\UserResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -11,27 +9,6 @@ use Filament\Tables\Table;
 class PendaftaranPelatihansRelationManager extends RelationManager
 {
     protected static string $relationship = 'pendaftaranPelatihan';
-
-    public function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('pelatihan_id')
-                    ->relationship('pelatihan', 'judul')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'terdaftar' => 'Terdaftar',
-                        'diterima' => 'Diterima',
-                        'ditolak' => 'Ditolak',
-                        'selesai' => 'Selesai',
-                    ])
-                    ->default('terdaftar')
-                    ->required(),
-            ]);
-    }
 
     public function table(Table $table): Table
     {
@@ -62,18 +39,6 @@ class PendaftaranPelatihansRelationManager extends RelationManager
                         'ditolak' => 'Ditolak',
                         'selesai' => 'Selesai',
                     ]),
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

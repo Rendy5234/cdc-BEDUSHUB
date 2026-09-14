@@ -2,8 +2,6 @@
 
 namespace App\Filament\Admin\Resources\PerusahaanResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -11,41 +9,6 @@ use Filament\Tables\Table;
 class LowongansRelationManager extends RelationManager
 {
     protected static string $relationship = 'lowongans';
-
-    public function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('judul')
-                    ->required()
-                    ->maxLength(255)
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('tipe_pekerjaan')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('lokasi')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('gaji_min')
-                    ->numeric()
-                    ->minValue(0)
-                    ->prefix('Rp'),
-                Forms\Components\TextInput::make('gaji_max')
-                    ->numeric()
-                    ->minValue(0)
-                    ->prefix('Rp'),
-                Forms\Components\DatePicker::make('tanggal_berakhir'),
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'aktif' => 'Aktif',
-                        'nonaktif' => 'Nonaktif',
-                    ])
-                    ->default('aktif')
-                    ->required(),
-                Forms\Components\Textarea::make('deskripsi')
-                    ->columnSpanFull(),
-                Forms\Components\Textarea::make('kualifikasi')
-                    ->columnSpanFull(),
-            ]);
-    }
 
     public function table(Table $table): Table
     {
@@ -72,18 +35,6 @@ class LowongansRelationManager extends RelationManager
                         'aktif' => 'Aktif',
                         'nonaktif' => 'Nonaktif',
                     ]),
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

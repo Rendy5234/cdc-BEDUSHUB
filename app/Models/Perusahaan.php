@@ -35,4 +35,19 @@ class Perusahaan extends Model
     {
         return $this->hasMany(Lowongan::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Perusahaan $perusahaan) {
+            if ($perusahaan->isForceDeleting()) {
+                return;
+            }
+
+            $perusahaan->lowongans->each->delete();
+        });
+
+        static::restoring(function (Perusahaan $perusahaan) {
+            $perusahaan->lowongans()->onlyTrashed()->get()->each->restore();
+        });
+    }
 }

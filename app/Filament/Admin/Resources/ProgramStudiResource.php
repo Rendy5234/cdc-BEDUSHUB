@@ -19,6 +19,8 @@ class ProgramStudiResource extends Resource
 
     protected static ?string $navigationGroup = 'Data Master';
 
+    protected static ?int $navigationSort = 3;
+
     protected static ?string $modelLabel = 'Program Studi';
 
     protected static ?string $pluralModelLabel = 'Program Studi';
@@ -28,7 +30,7 @@ class ProgramStudiResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('fakultas_id')
-                    ->relationship('fakultas', 'nama')
+                    ->relationship('fakultas', 'nama', fn ($query) => $query->withoutTrashed())
                     ->required()
                     ->searchable()
                     ->preload(),
@@ -79,7 +81,7 @@ class ProgramStudiResource extends Resource
                 Tables\Filters\SelectFilter::make('jenjang')
                     ->options(Jenjang::tertiaryLabels()),
                 Tables\Filters\SelectFilter::make('fakultas_id')
-                    ->relationship('fakultas', 'nama')
+                    ->relationship('fakultas', 'nama', fn ($query) => $query->withoutTrashed())
                     ->label('Fakultas')
                     ->searchable()
                     ->preload(),

@@ -27,7 +27,7 @@ class AsesmenSoalResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('asesmen_id')
-                    ->relationship('asesmen', 'judul')
+                    ->relationship('asesmen', 'judul', fn ($query) => $query->withoutTrashed())
                     ->required()
                     ->searchable()
                     ->preload(),
@@ -36,12 +36,12 @@ class AsesmenSoalResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\Select::make('skill_id')
                     ->label('Skill')
-                    ->relationship('skill', 'nama')
+                    ->relationship('skill', 'nama', fn ($query) => $query->withoutTrashed())
                     ->searchable()
                     ->preload(),
                 Forms\Components\Select::make('kategori_minat_id')
                     ->label('Kategori Minat')
-                    ->relationship('kategoriMinat', 'nama')
+                    ->relationship('kategoriMinat', 'nama', fn ($query) => $query->withoutTrashed())
                     ->searchable()
                     ->preload(),
                 Forms\Components\Select::make('tipe_jawaban')
@@ -91,7 +91,7 @@ class AsesmenSoalResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('asesmen_id')
-                    ->relationship('asesmen', 'judul')
+                    ->relationship('asesmen', 'judul', fn ($query) => $query->withoutTrashed())
                     ->label('Asesmen')
                     ->searchable()
                     ->preload(),
@@ -102,12 +102,12 @@ class AsesmenSoalResource extends Resource
                         'teks' => 'Teks',
                     ]),
                 Tables\Filters\SelectFilter::make('skill_id')
-                    ->relationship('skill', 'nama')
+                    ->relationship('skill', 'nama', fn ($query) => $query->withoutTrashed())
                     ->label('Skill')
                     ->searchable()
                     ->preload(),
                 Tables\Filters\SelectFilter::make('kategori_minat_id')
-                    ->relationship('kategoriMinat', 'nama')
+                    ->relationship('kategoriMinat', 'nama', fn ($query) => $query->withoutTrashed())
                     ->label('Kategori Minat')
                     ->searchable()
                     ->preload(),

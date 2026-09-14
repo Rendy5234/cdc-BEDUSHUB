@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class AsesmenJawabanResource extends Resource
@@ -28,11 +29,11 @@ class AsesmenJawabanResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('asesmen_id')
-                    ->relationship('asesmen', 'judul')
+                    ->relationship('asesmen', 'judul', fn ($query) => $query->withoutTrashed())
                     ->searchable()
                     ->preload(),
                 Forms\Components\Select::make('soal_id')
-                    ->relationship('soal', 'pertanyaan')
+                    ->relationship('soal', 'pertanyaan', fn ($query) => $query->withoutTrashed())
                     ->searchable()
                     ->preload()
                     ->getOptionLabelFromRecordUsing(fn ($record) => Str::limit($record->pertanyaan, 80)),
@@ -69,14 +70,22 @@ class AsesmenJawabanResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('asesmen')
-                    ->relationship('asesmen', 'judul')
-                    ->searchable()
-                    ->preload(),
-                Tables\Filters\SelectFilter::make('soal')
-                    ->relationship('soal', 'pertanyaan')
+                    ->relationship('asesmen', 'judul', fn ($query) => $query->withoutTrashed())
                     ->searchable()
                     ->preload()
-                    ->getOptionLabelFromRecordUsing(fn ($record) => Str::limit($record->pertanyaan, 80)),
+                    ->modifyFormFieldUsing(fn (Forms\Components\Select $field) => $field->live()),
+                Tables\Filters\SelectFilter::make('soal')
+                    ->relationship('soal', 'pertanyaan', fn ($query) => $query->withoutTrashed())
+                    ->searchable()
+                    ->preload()
+                    ->getOptionLabelFromRecordUsing(fn ($record) => Str::limit($record->pertanyaan, 80))
+                    ->modifyFormFieldUsing(function (Forms\Components\Select $field) {
+                        return $field->relationship(
+                            'soal',
+                            'pertanyaan',
+                            modifyQueryUsing: fn (Builder $query, Forms\Get $get) => $query->where('asesmen_id', $get('../asesmen.value'))->withoutTrashed(),
+                        );
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

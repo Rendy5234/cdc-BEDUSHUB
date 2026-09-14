@@ -19,6 +19,8 @@ class KategoriMinatResource extends Resource
 
     protected static ?string $navigationGroup = 'Data Master';
 
+    protected static ?int $navigationSort = 5;
+
     protected static ?string $modelLabel = 'Kategori Minat';
 
     protected static ?string $pluralModelLabel = 'Kategori Minat';

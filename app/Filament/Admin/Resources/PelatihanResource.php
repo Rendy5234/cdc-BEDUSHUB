@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\JenisPelatihan;
 use App\Enums\SkillLevel;
 use App\Filament\Admin\Resources\PelatihanResource\Pages;
 use App\Filament\Admin\Resources\PelatihanResource\RelationManagers;
@@ -11,6 +12,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class PelatihanResource extends Resource
 {
@@ -34,6 +36,10 @@ class PelatihanResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\TextInput::make('topik')
                     ->maxLength(255),
+                Forms\Components\Select::make('jenis')
+                    ->label('Jenis Pelatihan')
+                    ->options(JenisPelatihan::labels())
+                    ->searchable(),
                 Forms\Components\Select::make('level')
                     ->label('Level')
                     ->options(SkillLevel::labels())
@@ -43,6 +49,13 @@ class PelatihanResource extends Resource
                     ->maxLength(255),
                 Forms\Components\DatePicker::make('tanggal_mulai'),
                 Forms\Components\DatePicker::make('tanggal_selesai'),
+                Forms\Components\TimePicker::make('jam_mulai')
+                    ->seconds(false),
+                Forms\Components\TimePicker::make('jam_selesai')
+                    ->seconds(false),
+                Forms\Components\TextInput::make('tempat')
+                    ->label('Tempat / Link')
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('kuota')
                     ->numeric()
                     ->minValue(0),
@@ -51,6 +64,22 @@ class PelatihanResource extends Resource
                     ->multiple()
                     ->preload()
                     ->label('Kategori Minat'),
+                Forms\Components\FileUpload::make('thumbnail')
+                    ->image()
+                    ->directory('pelatihan')
+                    ->deleteUploadedFileUsing(function ($file) {
+                        if (is_string($file)) {
+                            Storage::disk('public')->delete($file);
+                        }
+                    }),
+                Forms\Components\TextInput::make('link_materi')
+                    ->label('Link Materi/Dokumen')
+                    ->url()
+                    ->placeholder('https://drive.google.com/...'),
+                Forms\Components\TextInput::make('link_sertifikat')
+                    ->label('Link Sertifikat')
+                    ->url()
+                    ->placeholder('https://drive.google.com/...'),
                 Forms\Components\Select::make('status')
                     ->options([
                         'draft' => 'Draft',
@@ -106,9 +135,20 @@ class PelatihanResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                Tables\Actions\RestoreAction::make()
+                    ->label('Pulihkan'),
+                Tables\Actions\ForceDeleteAction::make()
+                    ->label('Hapus Permanen'),
             ])
+            ->recordUrl(
+                fn (Pelatihan $record): ?string => $record->trashed()
+                    ? null
+                    : PelatihanResource::getUrl('edit', ['record' => $record]),
+            )
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

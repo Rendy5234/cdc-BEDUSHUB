@@ -21,7 +21,7 @@ class PendaftaranPelatihan extends Model
 
     public function pelatihan(): BelongsTo
     {
-        return $this->belongsTo(Pelatihan::class);
+        return $this->belongsTo(Pelatihan::class)->withTrashed();
     }
 
     public function user(): BelongsTo

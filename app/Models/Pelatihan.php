@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Pelatihan extends Model
 {
@@ -18,11 +19,18 @@ class Pelatihan extends Model
         'judul',
         'deskripsi',
         'topik',
+        'jenis',
         'level',
         'instruktur',
         'tanggal_mulai',
         'tanggal_selesai',
+        'jam_mulai',
+        'jam_selesai',
+        'tempat',
         'kuota',
+        'thumbnail',
+        'link_materi',
+        'link_sertifikat',
         'status',
     ];
 
@@ -42,6 +50,19 @@ class Pelatihan extends Model
         return $this->hasMany(PendaftaranPelatihan::class);
     }
 
+    public function sisaKuota(): ?int
+    {
+        if ($this->kuota === null) {
+            return null;
+        }
+
+        $terisi = $this->pendaftaranPelatihans()
+            ->where('status', '!=', 'ditolak')
+            ->count();
+
+        return max(0, $this->kuota - $terisi);
+    }
+
     public function skills(): BelongsToMany
     {
         return $this->belongsToMany(Skill::class, 'pelatihan_skill')->withTimestamps();
@@ -50,5 +71,28 @@ class Pelatihan extends Model
     public function minat(): BelongsToMany
     {
         return $this->belongsToMany(KategoriMinat::class, 'pelatihan_minat')->withTimestamps();
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Pelatihan $pelatihan) {
+            if ($pelatihan->isForceDeleting()) {
+                return;
+            }
+
+            $pelatihan->pendaftaranPelatihans->each->delete();
+            $pelatihan->pelatihanSkills->each->delete();
+        });
+
+        static::restoring(function (Pelatihan $pelatihan) {
+            $pelatihan->pendaftaranPelatihans()->onlyTrashed()->get()->each->restore();
+            $pelatihan->pelatihanSkills()->onlyTrashed()->get()->each->restore();
+        });
+
+        static::forceDeleted(function (Pelatihan $pelatihan) {
+            if (filled($pelatihan->thumbnail)) {
+                Storage::disk('public')->delete($pelatihan->thumbnail);
+            }
+        });
     }
 }

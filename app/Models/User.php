@@ -166,4 +166,19 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(AsesmenJawaban::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user) {
+            if ($user->isForceDeleting()) {
+                return; // FK cascadeOnDelete pada perusahaan.user_id menangani hard delete
+            }
+
+            $user->perusahaan?->delete();
+        });
+
+        static::restoring(function (User $user) {
+            $user->perusahaan()->onlyTrashed()->first()?->restore();
+        });
+    }
 }

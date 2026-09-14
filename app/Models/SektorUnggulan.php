@@ -25,4 +25,19 @@ class SektorUnggulan extends Model
     {
         return $this->hasMany(PotensiDaerah::class, 'sektor_id');
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (SektorUnggulan $sektor) {
+            if ($sektor->isForceDeleting()) {
+                return;
+            }
+
+            $sektor->potensiDaerahs->each->delete();
+        });
+
+        static::restoring(function (SektorUnggulan $sektor) {
+            $sektor->potensiDaerahs()->onlyTrashed()->get()->each->restore();
+        });
+    }
 }

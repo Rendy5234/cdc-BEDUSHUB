@@ -27,7 +27,7 @@ class PotensiDaerahResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('sektor_id')
-                    ->relationship('sektor', 'nama')
+                    ->relationship('sektor', 'nama', fn ($query) => $query->withoutTrashed())
                     ->required()
                     ->searchable()
                     ->preload(),
@@ -41,7 +41,7 @@ class PotensiDaerahResource extends Resource
                 Forms\Components\Textarea::make('peluang_usaha')
                     ->columnSpanFull(),
                 Forms\Components\Select::make('skills')
-                    ->relationship('skills', 'nama')
+                    ->relationship('skills', 'nama', fn ($query) => $query->withoutTrashed())
                     ->multiple()
                     ->preload()
                     ->searchable()
@@ -70,19 +70,30 @@ class PotensiDaerahResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('sektor_id')
-                    ->relationship('sektor', 'nama')
+                    ->relationship('sektor', 'nama', fn ($query) => $query->withoutTrashed())
                     ->label('Sektor'),
                 Tables\Filters\SelectFilter::make('skills')
-                    ->relationship('skills', 'nama')
+                    ->relationship('skills', 'nama', fn ($query) => $query->withoutTrashed())
                     ->label('Skill')
                     ->multiple()
                     ->preload(),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                Tables\Actions\RestoreAction::make()
+                    ->label('Pulihkan'),
+                Tables\Actions\ForceDeleteAction::make()
+                    ->label('Hapus Permanen'),
             ])
+            ->recordUrl(
+                fn (PotensiDaerah $record): ?string => $record->trashed()
+                    ? null
+                    : PotensiDaerahResource::getUrl('edit', ['record' => $record]),
+            )
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

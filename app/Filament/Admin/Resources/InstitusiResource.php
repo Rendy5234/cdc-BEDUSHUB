@@ -18,6 +18,8 @@ class InstitusiResource extends Resource
 
     protected static ?string $navigationGroup = 'Data Master';
 
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $modelLabel = 'Institusi';
 
     protected static ?string $pluralModelLabel = 'Institusi';

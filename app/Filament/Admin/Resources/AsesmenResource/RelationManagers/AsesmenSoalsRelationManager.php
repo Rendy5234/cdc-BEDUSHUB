@@ -21,6 +21,16 @@ class AsesmenSoalsRelationManager extends RelationManager
                 Forms\Components\Textarea::make('pertanyaan')
                     ->required()
                     ->columnSpanFull(),
+                Forms\Components\Select::make('skill_id')
+                    ->label('Skill')
+                    ->relationship('skill', 'nama')
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\Select::make('kategori_minat_id')
+                    ->label('Kategori Minat')
+                    ->relationship('kategoriMinat', 'nama')
+                    ->searchable()
+                    ->preload(),
                 Forms\Components\Select::make('tipe_jawaban')
                     ->options([
                         'pilihan_ganda' => 'Pilihan Ganda',
@@ -50,6 +60,14 @@ class AsesmenSoalsRelationManager extends RelationManager
                         'skala' => 'warning',
                         default => 'gray',
                     }),
+                Tables\Columns\TextColumn::make('skill.nama')
+                    ->label('Skill')
+                    ->badge()
+                    ->color('info'),
+                Tables\Columns\TextColumn::make('kategoriMinat.nama')
+                    ->label('Minat')
+                    ->badge()
+                    ->color('warning'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
