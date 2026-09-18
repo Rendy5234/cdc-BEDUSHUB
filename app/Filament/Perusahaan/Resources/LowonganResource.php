@@ -4,6 +4,7 @@ namespace App\Filament\Perusahaan\Resources;
 
 use App\Enums\Jenjang;
 use App\Filament\Perusahaan\Resources\LowonganResource\Pages;
+use App\Filament\Perusahaan\Resources\LowonganResource\RelationManagers;
 use App\Models\Lowongan;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -32,12 +33,12 @@ class LowonganResource extends Resource
                     ->default(fn () => auth()->user()?->perusahaan?->id),
                 Forms\Components\TextInput::make('judul')
                     ->required()
-                    ->maxLength(255)
-                    ->columnSpanFull(),
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('tipe_pekerjaan')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('lokasi')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->columnSpanFull(),
                 Forms\Components\TextInput::make('gaji_min')
                     ->numeric()
                     ->minValue(0)
@@ -46,34 +47,53 @@ class LowonganResource extends Resource
                     ->numeric()
                     ->minValue(0)
                     ->prefix('Rp'),
-                Forms\Components\DatePicker::make('tanggal_berakhir'),
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'aktif' => 'Aktif',
-                        'nonaktif' => 'Nonaktif',
-                    ])
-                    ->default('aktif')
-                    ->required(),
-                Forms\Components\FileUpload::make('thumbnail')
-                    ->image()
-                    ->directory('lowongan'),
-                Forms\Components\DatePicker::make('tanggal_mulai'),
-                Forms\Components\TextInput::make('kuota')
-                    ->numeric()
-                    ->minValue(0),
-                Forms\Components\Select::make('pendidikan')
-                    ->options(Jenjang::labels())
-                    ->searchable(),
+                Forms\Components\Grid::make(3)
+                    ->schema([
+                        Forms\Components\DatePicker::make('tanggal_mulai'),
+                        Forms\Components\DatePicker::make('tanggal_berakhir'),
+                        Forms\Components\Select::make('pendidikan')
+                            ->label('Pendidikan (Jenjang)')
+                            ->options(Jenjang::labels())
+                            ->searchable(),
+                    ]),
                 Forms\Components\Select::make('minat')
                     ->relationship('minat', 'nama')
                     ->multiple()
                     ->preload()
-                    ->label('Kategori Minat'),
+                    ->label('Kategori Minat')
+                    ->columnSpanFull(),
+                Forms\Components\Grid::make(4)
+                    ->schema([
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\TextInput::make('kuota')
+                                    ->label('Kuota Pendaftar')
+                                    ->numeric()
+                                    ->minValue(0),
+                                Forms\Components\TextInput::make('kuota_diterima')
+                                    ->label('Kuota Diterima')
+                                    ->numeric()
+                                    ->minValue(0),
+                                Forms\Components\Select::make('status')
+                                    ->options([
+                                        'aktif' => 'Aktif',
+                                        'nonaktif' => 'Nonaktif',
+                                    ])
+                                    ->default('aktif')
+                                    ->required(),
+                            ])
+                            ->columnSpan(2),
+                        Forms\Components\FileUpload::make('thumbnail')
+                            ->image()
+                            ->directory('lowongan')
+                            ->columnSpan(2),
+                    ]),
                 Forms\Components\Textarea::make('deskripsi')
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('kualifikasi')
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('benefit')
+                    ->label('Benefit')
                     ->columnSpanFull(),
             ]);
     }
@@ -92,7 +112,13 @@ class LowonganResource extends Resource
                 Tables\Columns\ImageColumn::make('thumbnail')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('kuota')
-                    ->sortable()
+                    ->alignCenter()
+                    // ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('kuota_diterima')
+                    ->alignCenter()
+                    ->label('Diterima')
+                    // ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('tanggal_mulai')
                     ->date()
@@ -135,7 +161,7 @@ class LowonganResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\LowonganSkillsRelationManager::class,
         ];
     }
 

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Lowongan extends Model
 {
@@ -30,6 +31,7 @@ class Lowongan extends Model
         'benefit',
         'pendidikan',
         'kuota',
+        'kuota_diterima',
         'tanggal_mulai',
         'thumbnail',
     ];
@@ -39,6 +41,7 @@ class Lowongan extends Model
         'gaji_max' => 'integer',
         'tanggal_berakhir' => 'date',
         'kuota' => 'integer',
+        'kuota_diterima' => 'integer',
         'tanggal_mulai' => 'date',
     ];
 
@@ -92,6 +95,20 @@ class Lowongan extends Model
         static::restoring(function (Lowongan $lowongan) {
             $lowongan->lamarans()->onlyTrashed()->get()->each->restore();
             $lowongan->lowonganSkills()->onlyTrashed()->get()->each->restore();
+        });
+
+        static::updated(function (Lowongan $lowongan) {
+            $thumbnailLama = $lowongan->getOriginal('thumbnail');
+
+            if (filled($thumbnailLama) && $thumbnailLama !== $lowongan->thumbnail) {
+                Storage::disk('public')->delete($thumbnailLama);
+            }
+        });
+
+        static::forceDeleted(function (Lowongan $lowongan) {
+            if (filled($lowongan->thumbnail)) {
+                Storage::disk('public')->delete($lowongan->thumbnail);
+            }
         });
     }
 }

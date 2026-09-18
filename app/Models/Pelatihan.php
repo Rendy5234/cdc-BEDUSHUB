@@ -89,6 +89,14 @@ class Pelatihan extends Model
             $pelatihan->pelatihanSkills()->onlyTrashed()->get()->each->restore();
         });
 
+        static::updated(function (Pelatihan $pelatihan) {
+            $thumbnailLama = $pelatihan->getOriginal('thumbnail');
+
+            if (filled($thumbnailLama) && $thumbnailLama !== $pelatihan->thumbnail) {
+                Storage::disk('public')->delete($thumbnailLama);
+            }
+        });
+
         static::forceDeleted(function (Pelatihan $pelatihan) {
             if (filled($pelatihan->thumbnail)) {
                 Storage::disk('public')->delete($pelatihan->thumbnail);

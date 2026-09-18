@@ -12,7 +12,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Storage;
 
 class PelatihanResource extends Resource
 {
@@ -66,12 +65,7 @@ class PelatihanResource extends Resource
                     ->label('Kategori Minat'),
                 Forms\Components\FileUpload::make('thumbnail')
                     ->image()
-                    ->directory('pelatihan')
-                    ->deleteUploadedFileUsing(function ($file) {
-                        if (is_string($file)) {
-                            Storage::disk('public')->delete($file);
-                        }
-                    }),
+                    ->directory('pelatihan'),
                 Forms\Components\TextInput::make('link_materi')
                     ->label('Link Materi/Dokumen')
                     ->url()

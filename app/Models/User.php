@@ -171,10 +171,14 @@ class User extends Authenticatable implements FilamentUser
     {
         static::deleting(function (User $user) {
             if ($user->isForceDeleting()) {
-                return; // FK cascadeOnDelete pada perusahaan.user_id menangani hard delete
+                return; // perusahaan dihapus permanen di forceDeleting di bawah
             }
 
             $user->perusahaan?->delete();
+        });
+
+        static::forceDeleting(function (User $user) {
+            $user->perusahaan()->withTrashed()->first()?->forceDelete();
         });
 
         static::restoring(function (User $user) {

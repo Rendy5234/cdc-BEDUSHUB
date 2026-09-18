@@ -6,11 +6,10 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
+use App\Filament\Perusahaan\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -33,12 +32,9 @@ class PerusahaanPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Perusahaan/Resources'), for: 'App\\Filament\\Perusahaan\\Resources')
             ->discoverPages(in: app_path('Filament/Perusahaan/Pages'), for: 'App\\Filament\\Perusahaan\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Perusahaan/Widgets'), for: 'App\\Filament\\Perusahaan\\Widgets')
-            ->widgets([
-                Widgets\AccountWidget::class,
-            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

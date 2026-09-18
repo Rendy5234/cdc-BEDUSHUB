@@ -36,8 +36,7 @@ class LowonganResource extends Resource
                     ->preload(),
                 Forms\Components\TextInput::make('judul')
                     ->required()
-                    ->maxLength(255)
-                    ->columnSpanFull(),
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('tipe_pekerjaan')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('lokasi')
@@ -50,30 +49,49 @@ class LowonganResource extends Resource
                     ->numeric()
                     ->minValue(0)
                     ->prefix('Rp'),
-                Forms\Components\DatePicker::make('tanggal_berakhir'),
-                Forms\Components\Select::make('pendidikan')
-                    ->label('Pendidikan (Jenjang)')
-                    ->options(Jenjang::labels())
-                    ->searchable(),
+                Forms\Components\Grid::make(3)
+                    ->schema([
+                        Forms\Components\DatePicker::make('tanggal_mulai'),
+                        Forms\Components\DatePicker::make('tanggal_berakhir'),
+                        Forms\Components\Select::make('pendidikan')
+                            ->label('Pendidikan (Jenjang)')
+                            ->options(Jenjang::labels())
+                            ->searchable(),
+                    ]),
                 Forms\Components\Select::make('minat')
                     ->relationship('minat', 'nama')
                     ->multiple()
                     ->preload()
-                    ->label('Kategori Minat'),
-                Forms\Components\DatePicker::make('tanggal_mulai'),
-                Forms\Components\TextInput::make('kuota')
-                    ->numeric()
-                    ->minValue(0),
-                Forms\Components\FileUpload::make('thumbnail')
-                    ->image()
-                    ->directory('lowongan'),
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'aktif' => 'Aktif',
-                        'nonaktif' => 'Nonaktif',
-                    ])
-                    ->default('aktif')
-                    ->required(),
+                    ->label('Kategori Minat')
+                    ->columnSpanFull(),
+                Forms\Components\Grid::make(4)
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('kuota')
+                                    ->numeric()
+                                    ->minValue(0),
+                                Forms\Components\Select::make('status')
+                                    ->options([
+                                        'aktif' => 'Aktif',
+                                        'nonaktif' => 'Nonaktif',
+                                    ])
+                                    ->default('aktif')
+                                    ->required(),
+                            ])
+                            ->columnSpan(2),
+                        Forms\Components\FileUpload::make('thumbnail')
+                            ->image()
+                            ->directory('lowongan')
+                            ->columnSpan(2),
+                    ]),
+                // Forms\Components\Select::make('status')
+                //     ->options([
+                //         'aktif' => 'Aktif',
+                //         'nonaktif' => 'Nonaktif',
+                //     ])
+                //     ->default('aktif')
+                //     ->required(),
                 Forms\Components\Textarea::make('deskripsi')
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('kualifikasi')
@@ -101,7 +119,7 @@ class LowonganResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => $state === 'aktif' ? 'success' : 'danger'),
+                    ->color(fn(string $state): string => $state === 'aktif' ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('tanggal_berakhir')
                     ->date()
                     ->sortable(),

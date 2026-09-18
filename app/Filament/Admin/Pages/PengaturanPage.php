@@ -66,6 +66,7 @@ class PengaturanPage extends Page
                     ->columnSpanFull()
                     ->maxLength(255),
             ])
+            ->columns(2)
             ->statePath('data');
     }
 

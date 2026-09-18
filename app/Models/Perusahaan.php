@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Perusahaan extends Model
 {
@@ -40,6 +41,8 @@ class Perusahaan extends Model
     {
         static::deleting(function (Perusahaan $perusahaan) {
             if ($perusahaan->isForceDeleting()) {
+                $perusahaan->lowongans()->withTrashed()->get()->each->forceDelete();
+
                 return;
             }
 
@@ -48,6 +51,20 @@ class Perusahaan extends Model
 
         static::restoring(function (Perusahaan $perusahaan) {
             $perusahaan->lowongans()->onlyTrashed()->get()->each->restore();
+        });
+
+        static::updated(function (Perusahaan $perusahaan) {
+            $logoLama = $perusahaan->getOriginal('logo');
+
+            if (filled($logoLama) && $logoLama !== $perusahaan->logo) {
+                Storage::disk('public')->delete($logoLama);
+            }
+        });
+
+        static::forceDeleted(function (Perusahaan $perusahaan) {
+            if (filled($perusahaan->logo)) {
+                Storage::disk('public')->delete($perusahaan->logo);
+            }
         });
     }
 }

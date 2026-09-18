@@ -3,7 +3,8 @@
 namespace App\Filament\Perusahaan\Resources;
 
 use App\Filament\Perusahaan\Resources\LamaranResource\Pages;
-use App\Models\Lamaran;
+use App\Filament\Perusahaan\Resources\LamaranResource\RelationManagers;
+use App\Models\Lowongan;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class LamaranResource extends Resource
 {
-    protected static ?string $model = Lamaran::class;
+    protected static ?string $model = Lowongan::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-inbox';
 
@@ -24,57 +25,47 @@ class LamaranResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (Lowongan $record): string => static::getUrl('view', ['record' => $record]))
             ->columns([
-                Tables\Columns\TextColumn::make('lowongan.judul')
+                Tables\Columns\TextColumn::make('judul')
                     ->label('Lowongan')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('Pelamar')
-                    ->searchable()
+                Tables\Columns\TextColumn::make('kuota')
+                    ->label('Kuota Pendaftar')
+                    ->alignCenter()
                     ->sortable(),
-                Tables\Columns\SelectColumn::make('status')
-                    ->options([
-                        'diproses' => 'Diproses',
-                        'diterima' => 'Diterima',
-                        'ditolak' => 'Ditolak',
-                    ]),
-                Tables\Columns\TextColumn::make('catatan')
-                    ->limit(40)
-                    ->tooltip(fn ($record) => $record->catatan),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('kuota_diterima')
+                    ->label('Kuota Diterima')
+                    ->alignCenter()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => $state === 'aktif' ? 'success' : 'danger'),
+                Tables\Columns\TextColumn::make('tanggal_berakhir')
+                    ->date()
                     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
-                        'diproses' => 'Diproses',
-                        'diterima' => 'Diterima',
-                        'ditolak' => 'Ditolak',
-                    ]),
-                Tables\Filters\SelectFilter::make('lowongan_id')
-                    ->relationship('lowongan', 'judul')
-                    ->label('Lowongan'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                        'aktif' => 'Aktif',
+                        'nonaktif' => 'Nonaktif',
+                    ])
+                    ->default('aktif'),
             ]);
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->whereHas('lowongan', fn (Builder $query) => $query
-                ->whereHas('perusahaan', fn (Builder $q) => $q->where('user_id', auth()->id())));
+            ->whereHas('perusahaan', fn (Builder $query) => $query->where('user_id', auth()->id()));
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\LamaransRelationManager::class,
         ];
     }
 
@@ -82,6 +73,12 @@ class LamaranResource extends Resource
     {
         return [
             'index' => Pages\ListLamarans::route('/'),
+            'view' => Pages\ViewLowongan::route('/{record}'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
     }
 }
