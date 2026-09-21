@@ -34,6 +34,9 @@ class Lowongan extends Model
         'kuota_diterima',
         'tanggal_mulai',
         'thumbnail',
+        'butuh_surat_lamaran',
+        'butuh_pas_foto',
+        'rasio_pas_foto',
     ];
 
     protected $casts = [
@@ -43,6 +46,9 @@ class Lowongan extends Model
         'kuota' => 'integer',
         'kuota_diterima' => 'integer',
         'tanggal_mulai' => 'date',
+        'butuh_surat_lamaran' => 'boolean',
+        'butuh_pas_foto' => 'boolean',
+        'pendidikan' => 'array',
     ];
 
     public function perusahaan(): BelongsTo
@@ -70,15 +76,46 @@ class Lowongan extends Model
         return $this->belongsToMany(KategoriMinat::class, 'lowongan_minat')->withTimestamps();
     }
 
+    public function sisaKuota(): ?int
+    {
+        if ($this->kuota === null) {
+            return null;
+        }
+
+        $terisi = $this->lamarans()
+            ->where('status', '!=', 'ditolak')
+            ->count();
+
+        return max(0, $this->kuota - $terisi);
+    }
+
     /**
      * Lowongan yang boleh tampil ke user:
-     * berstatus aktif DAN perusahaannya berstatus kerjasama aktif.
+     * - berstatus aktif,
+     * - perusahaannya berstatus kerjasama aktif,
+     * - berada dalam rentang tanggal mulai s/d berakhir (toleran null),
+     * - masih memiliki sisa kuota (null = tanpa batas).
      */
     public function scopeTersediaUntukUser(Builder $query): Builder
     {
         return $query
             ->where('status', 'aktif')
-            ->whereHas('perusahaan', fn (Builder $q) => $q->where('status_kerjasama', 'aktif'));
+            ->whereHas('perusahaan', fn (Builder $q) => $q->where('status_kerjasama', 'aktif'))
+            ->where(function (Builder $q) {
+                $q->whereNull('tanggal_mulai')
+                    ->orWhereDate('tanggal_mulai', '<=', now()->toDateString());
+            })
+            ->where(function (Builder $q) {
+                $q->whereNull('tanggal_berakhir')
+                    ->orWhereDate('tanggal_berakhir', '>=', now()->toDateString());
+            })
+            ->where(function (Builder $q) {
+                $q->whereNull('kuota')
+                    ->orWhereRaw(
+                        '(SELECT COUNT(*) FROM lamaran WHERE lamaran.lowongan_id = lowongan.id AND lamaran.status != ? AND lamaran.deleted_at IS NULL) < lowongan.kuota',
+                        ['ditolak'],
+                    );
+            });
     }
 
     protected static function booted(): void

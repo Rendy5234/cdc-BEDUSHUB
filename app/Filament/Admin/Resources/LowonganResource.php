@@ -56,6 +56,7 @@ class LowonganResource extends Resource
                         Forms\Components\Select::make('pendidikan')
                             ->label('Pendidikan (Jenjang)')
                             ->options(Jenjang::labels())
+                            ->multiple()
                             ->searchable(),
                     ]),
                 Forms\Components\Select::make('minat')
@@ -119,7 +120,7 @@ class LowonganResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn(string $state): string => $state === 'aktif' ? 'success' : 'danger'),
+                    ->color(fn (string $state): string => $state === 'aktif' ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('tanggal_berakhir')
                     ->date()
                     ->sortable(),

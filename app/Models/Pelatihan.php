@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -61,6 +62,33 @@ class Pelatihan extends Model
             ->count();
 
         return max(0, $this->kuota - $terisi);
+    }
+
+    /**
+     * Pelatihan yang boleh tampil/didaftar oleh user:
+     * - berstatus published,
+     * - berada dalam rentang tanggal mulai s/d selesai (toleran null),
+     * - masih memiliki sisa kuota (null = tanpa batas).
+     */
+    public function scopeTersediaUntukUser(Builder $query): Builder
+    {
+        return $query
+            ->where('status', 'published')
+            ->where(function (Builder $q) {
+                $q->whereNull('tanggal_mulai')
+                    ->orWhereDate('tanggal_mulai', '<=', now()->toDateString());
+            })
+            ->where(function (Builder $q) {
+                $q->whereNull('tanggal_selesai')
+                    ->orWhereDate('tanggal_selesai', '>=', now()->toDateString());
+            })
+            ->where(function (Builder $q) {
+                $q->whereNull('kuota')
+                    ->orWhereRaw(
+                        '(SELECT COUNT(*) FROM pendaftaran_pelatihan WHERE pendaftaran_pelatihan.pelatihan_id = pelatihan.id AND pendaftaran_pelatihan.status != ? AND pendaftaran_pelatihan.deleted_at IS NULL) < pelatihan.kuota',
+                        ['ditolak'],
+                    );
+            });
     }
 
     public function skills(): BelongsToMany

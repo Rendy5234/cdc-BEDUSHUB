@@ -104,7 +104,7 @@ class ContentSeeder extends Seeder
             'gaji_max' => $gajiMax,
             'tanggal_berakhir' => now()->addDays($berakhirHari)->toDateString(),
             'status' => $status,
-            'pendidikan' => $pendidikan,
+            'pendidikan' => [$pendidikan],
         ]);
 
         foreach ($skills as [$nama, $level]) {

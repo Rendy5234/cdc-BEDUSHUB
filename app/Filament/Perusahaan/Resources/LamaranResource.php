@@ -65,7 +65,8 @@ class LamaranResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\LamaransRelationManager::class,
+            RelationManagers\PendaftarRelationManager::class,
+            RelationManagers\DiterimaRelationManager::class,
         ];
     }
 

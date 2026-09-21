@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Profile extends Model
 {
@@ -23,6 +24,7 @@ class Profile extends Model
         'institusi_id',
         'jurusan_id',
         'prodi_id',
+        'fakultas_id',
         'tahun_lulus',
         'status',
         'no_telp',
@@ -54,6 +56,11 @@ class Profile extends Model
         return $this->belongsTo(ProgramStudi::class, 'prodi_id')->withTrashed();
     }
 
+    public function fakultas(): BelongsTo
+    {
+        return $this->belongsTo(Fakultas::class)->withTrashed();
+    }
+
     public function userSkills(): HasMany
     {
         return $this->hasMany(UserSkill::class, 'user_id', 'user_id');
@@ -62,5 +69,22 @@ class Profile extends Model
     public function userMinat(): HasMany
     {
         return $this->hasMany(UserMinat::class, 'user_id', 'user_id');
+    }
+
+    protected static function booted(): void
+    {
+        static::updated(function (Profile $profile) {
+            $fotoLama = $profile->getOriginal('foto');
+
+            if (filled($fotoLama) && $fotoLama !== $profile->foto) {
+                Storage::disk('public')->delete($fotoLama);
+            }
+        });
+
+        static::forceDeleted(function (Profile $profile) {
+            if (filled($profile->foto)) {
+                Storage::disk('public')->delete($profile->foto);
+            }
+        });
     }
 }

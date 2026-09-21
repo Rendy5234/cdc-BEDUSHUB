@@ -54,6 +54,7 @@ class LowonganResource extends Resource
                         Forms\Components\Select::make('pendidikan')
                             ->label('Pendidikan (Jenjang)')
                             ->options(Jenjang::labels())
+                            ->multiple()
                             ->searchable(),
                     ]),
                 Forms\Components\Select::make('minat')
@@ -88,6 +89,23 @@ class LowonganResource extends Resource
                             ->directory('lowongan')
                             ->columnSpan(2),
                     ]),
+                Forms\Components\Section::make('Kelengkapan Dokumen Lamaran')
+                    ->schema([
+                        Forms\Components\Toggle::make('butuh_surat_lamaran')
+                            ->label('Mewajibkan Surat Lamaran')
+                            ->live(),
+                        Forms\Components\Toggle::make('butuh_pas_foto')
+                            ->label('Mewajibkan Pas Foto')
+                            ->live(),
+                        Forms\Components\Select::make('rasio_pas_foto')
+                            ->label('Rasio Pas Foto')
+                            ->options([
+                                '3x4' => '3x4',
+                                '4x6' => '4x6',
+                            ])
+                            ->visible(fn (Forms\Get $get): bool => (bool) $get('butuh_pas_foto')),
+                    ])
+                    ->columns(3),
                 Forms\Components\Textarea::make('deskripsi')
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('kualifikasi')

@@ -14,7 +14,7 @@ class AsesmenResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationGroup = 'Asesmen';
+    protected static ?string $navigationGroup = 'Karier & Pelatihan';
 
     protected static ?string $modelLabel = 'Asesmen';
 
@@ -50,7 +50,14 @@ class AsesmenResource extends Resource
                         'bakat' => 'Bakat',
                         'skill' => 'Skill',
                     ]),
-            ]);
+            ])
+            ->actions([
+                Tables\Actions\Action::make('kerjakan')
+                    ->label('Kerjakan')
+                    ->icon('heroicon-o-pencil-square')
+                    ->url(fn (Asesmen $record) => static::getUrl('kerjakan', ['record' => $record])),
+            ])
+            ->recordUrl(fn (Asesmen $record) => static::getUrl('kerjakan', ['record' => $record]));
     }
 
     public static function getRelations(): array
@@ -64,6 +71,7 @@ class AsesmenResource extends Resource
     {
         return [
             'index' => Pages\ListAsesmens::route('/'),
+            'kerjakan' => Pages\KerjakanAsesmen::route('/{record}/kerjakan'),
         ];
     }
 }
