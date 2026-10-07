@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schema.railpack.com",
+    "steps": {
+        "build": {
+            "commands": [
+                "npm run build",
+                "mkdir -p database storage/app/public storage/framework/sessions storage/framework/views storage/framework/cache storage/framework/testing storage/logs bootstrap/cache",
+                "touch database/database.sqlite",
+                "chmod -R a+rw storage bootstrap/cache database"
+            ]
+        }
+    },
+    "deploy": {
+        "startCommand": "bash start.sh",
+        "variables": {
+            "PHP_CLI_SERVER_WORKERS": "4"
+        }
+    }
+}

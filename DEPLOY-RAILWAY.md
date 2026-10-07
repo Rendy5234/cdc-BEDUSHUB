@@ -15,25 +15,29 @@ ke **Railway** sebagai environment **demo** untuk dosen/penguji.
 
 | Komponen | Nilai |
 |---|---|
-| Build system | **Nixpacks** (`nixpacks.toml`) |
+| Build system | **Railpack** (`railpack.json`) — Railway **tidak lagi memakai Nixpacks** |
 | PHP | **8.2** (otomatis dari `composer.json` `"php": "^8.2"`) |
 | Node.js | **20** (otomatis dari file `.nvmrc`) |
 | Ekstensi PHP | otomatis dari entri `ext-*` di `composer.json` (`pdo_sqlite`, `sqlite3`, `gd`, `intl`, `mbstring`, `zip`, `curl`, `fileinfo`, `openssl`, `tokenizer`, `xml`, `ctype`, `pdo`) |
 | Database | **SQLite** (`database/database.sqlite`, dibuat ulang setiap boot) |
 | Web server | `php artisan serve --host=0.0.0.0 --port=$PORT` |
 | Sesi / Cache / Queue | driver `database` (default) |
-| Boot script | `start.sh` (dijalankan via `[start].cmd` di `nixpacks.toml`) |
+| Boot script | `start.sh` (dijalankan via `deploy.startCommand` di `railpack.json`) |
 | Repo | `github.com/Rendy5234/cdc-BEDUSHUB` (branch `main`) |
 
 File konfigurasi yang ditambahkan untuk deploy:
 
-- `nixpacks.toml` — konfigurasi build Nixpacks.
+- `railpack.json` — konfigurasi build Railpack (menggantikan `nixpacks.toml`).
 - `start.sh` — skrip boot (symlink storage, migrate:fresh --seed, cache, jalankan server).
 - `.nvmrc` — memaksa Node.js versi 20 (Vite 6 + Tailwind 4 memerlukan ≥ 20).
 
+> ⚠️ **Railway sekarang memakai build driver `railpack`** (terlihat di log: `using build driver
+> railpack-v0.40.1`). File `nixpacks.toml` **sudah dihapus** karena diabaikan sepenuhnya oleh
+> Railpack. Konfigurasi kini memakai `railpack.json`.
+
 Perubahan pendukung:
 
-- `composer.json` — menambahkan `ext-*` (cara resmi Nixpacks memasang ekstensi PHP).
+- `composer.json` — menambahkan `ext-*` (cara Railpack memasang ekstensi PHP otomatis).
 - `bootstrap/app.php` — `$middleware->trustProxies(at: '*')` agar skema HTTPS Railway terbaca
   (mencegah mixed-content / redirect loop).
 
@@ -46,8 +50,8 @@ Perubahan pendukung:
 3. Perubahan konfigurasi deploy (file di atas) sudah di-**commit & push** ke `main`.
 
 ```bash
-git add nixpacks.toml start.sh .nvmrc composer.json composer.lock bootstrap/app.php DEPLOY-RAILWAY.md
-git commit -m "chore: siapkan konfigurasi deploy Railway (nixpacks + start.sh)"
+git add railpack.json start.sh .nvmrc composer.json composer.lock bootstrap/app.php DEPLOY-RAILWAY.md
+git commit -m "chore: siapkan konfigurasi deploy Railway (railpack + start.sh)"
 git push origin main
 ```
 
@@ -59,7 +63,8 @@ git push origin main
 
 1. Buka [railway.app/new](https://railway.app/new) → **Deploy from GitHub repo**.
 2. Pilih repo `Rendy5234/cdc-BEDUSHUB`.
-3. Railway akan otomatis mendeteksi **Nixpacks** dan mulai build.
+3. Railway akan otomatis mendeteksi Laravel dan mulai build memakai **Railpack**
+   (`railpack.json` mengonfigurasi langkah build & start command).
 4. Setelah service dibuat, buka **Service → Settings → Source**:
    - **Branch**: `main`
    - **Auto Deploy**: aktif (Railway akan build ulang tiap push ke `main`).
@@ -132,6 +137,25 @@ Salin hasilnya (format `base64:...`) ke nilai `APP_KEY` di Railway.
 
 ## 5. Apa yang Terjadi Saat Boot
 
+Saat **build**, Railpack menjalankan step berikut secara berurutan:
+
+1. `install:composer` → `composer install` (otomatis oleh provider PHP).
+2. `install:node` → `npm install` (otomatis oleh provider Node; Node 20 dari `.nvmrc`).
+3. `prune:node` → membuang dev dependency frontend.
+4. `build` → **hanya 2 hal**: menjalankan `npm run build` (menghasilkan `public/build`)
+   lalu menyiapkan folder `storage/*`, `bootstrap/cache`, `database` + file
+   `database/database.sqlite` dan mengatur izin tulis.
+
+> Mengapa `build` di-override? Secara default provider PHP Railpack menambahkan
+> `php artisan config:cache`, `event:cache`, `route:cache`, `view:cache` ke step `build`.
+> Perintah itu **gagal di build-time** karena belum ada `.env`/`APP_KEY` dan database.
+> `railpack.json` **mengganti** daftar perintah step `build` (menghapus 4 perintah artisan
+> tersebut), lalu caching dipindah ke **runtime** lewat `start.sh`.
+>
+> Catatan: `composer install` & `npm install` **tidak** diulang di step `build` — keduanya
+> sudah dijalankan di step `install:composer` & `install:node` (layer-nya menjadi input step
+> `build`), sehingga `vendor/` dan `node_modules/` sudah tersedia saat `npm run build` berjalan.
+
 Urutan yang dijalankan `start.sh` setiap kontainer hidup:
 
 1. Membuat folder `storage/*` & `bootstrap/cache`, serta file `database/database.sqlite`.
@@ -174,10 +198,11 @@ Semua akun memakai password: **`password`**
 
 | Gejala | Penyebab | Solusi |
 |---|---|---|
-| Build gagal: `attribute 'pe.all.xxx' missing` | Nama `ext-*` salah / tidak ada di nixpkgs | Hapus entri `ext-*` yang tidak valid dari `composer.json` |
+| Build gagal saat `php artisan config:cache`/`route:cache`/`view:cache` | Railpack menjalankan cache Laravel di **build time** (tanpa `.env`/`APP_KEY`/DB) | `railpack.json` **mengganti** blok build sehingga cache dijalankan saat **runtime** (`start.sh`), bukan build |
+| Build gagal: ekstensi PHP hilang | `ext-*` tidak dikenali Railpack/FrankenPHP | Sudah otomatis dari `composer.json`; tambah lewat `RAILPACK_PHP_EXTENSIONS` bila perlu |
 | `No application encryption key has been specified` | `APP_KEY` belum diset | Set `APP_KEY` di Variables Railway |
 | Halaman tampil tanpa CSS / mixed-content | `APP_URL` beda dengan domain / proxy tidak dipercaya | Samakan `APP_URL`; `trustProxies` sudah diaktifkan |
-| Aset Vite 404 (`/build/manifest.json`) | `npm run build` tidak jalan | Pastikan `package.json` punya script `build` (sudah ada) & jangan hapus `[phases.build]` |
+| Aset Vite 404 (`/build/manifest.json`) | `npm run build` tidak jalan | Pastikan `package.json` punya script `build` (sudah ada) & `railpack.json` masih memuat `npm run build` |
 | Upload gambar gagal | Batas `upload_max_filesize` PHP | Turunkan `maxSize` Filament atau naikkan limit (lihat `.clinerules/media.md` §7) |
 | Data hilang setelah redeploy | Tidak ada volume (memang by design) | Segala perubahan data tidak persisten — intended untuk demo |
 
@@ -204,5 +229,5 @@ Semua akun memakai password: **`password`**
 
 ---
 
-*Panduan ini dibuat mengikuti kondisi kode saat ini. Perbarui bila mengubah `nixpacks.toml`,
+*Panduan ini dibuat mengikuti kondisi kode saat ini. Perbarui bila mengubah `railpack.json`,
 `start.sh`, variabel, atau strategi penyimpanan.*

@@ -3,7 +3,8 @@
 # =============================================================================
 #  start.sh — Skrip boot aplikasi CDC BEDUSHUB di Railway (container ephemeral)
 # =============================================================================
-#  Dijalankan oleh Nixpacks (lihat [start].cmd di nixpacks.toml).
+#  Dijalankan via `deploy.startCommand` pada railpack.json (Railway kini memakai
+#  build driver Railpack, bukan Nixpacks lagi).
 #
 #  Alur:
 #   1. Siapkan file database SQLite (fresh setiap deploy — tidak ada volume).
