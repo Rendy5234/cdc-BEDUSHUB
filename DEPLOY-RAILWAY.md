@@ -155,6 +155,9 @@ Saat **build**, Railpack menjalankan step berikut secara berurutan:
 > Catatan: `composer install` & `npm install` **tidak** diulang di step `build` — keduanya
 > sudah dijalankan di step `install:composer` & `install:node` (layer-nya menjadi input step
 > `build`), sehingga `vendor/` dan `node_modules/` sudah tersedia saat `npm run build` berjalan.
+>
+> `package-lock.json` sudah di-commit sehingga Railway bisa memakai `npm ci` (instalasi
+> deterministik). Bila file itu tidak ada, Railpack otomatis jatuh ke `npm install`.
 
 Urutan yang dijalankan `start.sh` setiap kontainer hidup:
 
