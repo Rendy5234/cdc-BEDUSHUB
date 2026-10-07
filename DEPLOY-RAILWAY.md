@@ -16,7 +16,7 @@ ke **Railway** sebagai environment **demo** untuk dosen/penguji.
 | Komponen | Nilai |
 |---|---|
 | Build system | **Railpack** (`railpack.json`) — Railway **tidak lagi memakai Nixpacks** |
-| PHP | **8.2** (otomatis dari `composer.json` `"php": "^8.2"`) |
+| PHP | **8.4** (otomatis dari `composer.json` `"php": "^8.4"`; image `dunglas/frankenphp:php8.4-trixie`) |
 | Node.js | **20** (otomatis dari file `.nvmrc`) |
 | Ekstensi PHP | otomatis dari entri `ext-*` di `composer.json` (`pdo_sqlite`, `sqlite3`, `gd`, `intl`, `mbstring`, `zip`, `curl`, `fileinfo`, `openssl`, `tokenizer`, `xml`, `ctype`, `pdo`) |
 | Database | **SQLite** (`database/database.sqlite`, dibuat ulang setiap boot) |
@@ -200,6 +200,7 @@ Semua akun memakai password: **`password`**
 |---|---|---|
 | Build gagal saat `php artisan config:cache`/`route:cache`/`view:cache` | Railpack menjalankan cache Laravel di **build time** (tanpa `.env`/`APP_KEY`/DB) | `railpack.json` **mengganti** blok build sehingga cache dijalankan saat **runtime** (`start.sh`), bukan build |
 | Build gagal: ekstensi PHP hilang | `ext-*` tidak dikenali Railpack/FrankenPHP | Sudah otomatis dari `composer.json`; tambah lewat `RAILPACK_PHP_EXTENSIONS` bila perlu |
+| Build gagal `composer install ... Your lock file does not contain a compatible set of packages` | Versi PHP Railpack **lebih rendah** dari yang dibutuhkan `composer.lock` (mis. lock dibuat di PHP 8.4 berisi `symfony/* v8` yang butuh `>=8.4.1`, `openspout v4.32` butuh `~8.3/8.4`) | Selaraskan `"php"` di `composer.json` dengan versi PHP saat `composer.lock` dibuat (kini `^8.4`). Railpack membaca `composer.json > require > php`; hanya prefix `^` yang dibuang → `^8.4` menjadi `8.4` |
 | `No application encryption key has been specified` | `APP_KEY` belum diset | Set `APP_KEY` di Variables Railway |
 | Halaman tampil tanpa CSS / mixed-content | `APP_URL` beda dengan domain / proxy tidak dipercaya | Samakan `APP_URL`; `trustProxies` sudah diaktifkan |
 | Aset Vite 404 (`/build/manifest.json`) | `npm run build` tidak jalan | Pastikan `package.json` punya script `build` (sudah ada) & `railpack.json` masih memuat `npm run build` |
