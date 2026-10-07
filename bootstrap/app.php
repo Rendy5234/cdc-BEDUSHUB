@@ -11,7 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Percayai proxy di depan aplikasi (mis. Railway) agar skema HTTPS
+        // dan host ikut terbaca dengan benar (mencegah mixed-content / redirect loop).
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
