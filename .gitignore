@@ -22,3 +22,39 @@ yarn-error.log
 /.vscode
 /.zed
 /.clinerules
+
+# cPanel deployment - jangan ignore .cpanel.yml
+# .cpanel.yml TIDAK di-ignore karena dibutuhkan untuk deployment
+
+# Database SQLite (jangan commit database lokal)
+/database/*.sqlite
+/database/*.sqlite-journal
+
+# File log
+/storage/logs/*.log
+
+# File backup
+*.bak
+*.old
+*.orig
+*.save
+
+# File OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# File upload testing
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# File .env tambahan
+.env.local
+.env.staging
+
+# Composer
+/composer.phar
+
+# Node
+.npm
+.yarn
