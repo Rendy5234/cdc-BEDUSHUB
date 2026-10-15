@@ -50,7 +50,31 @@ class ContentSeeder extends Seeder
         $this->pelatihan('Soft Skill & Kepemimpinan', 'draft', 'Pengembangan Diri', 'pemula', 'Rudi Hartono', 30, 31, 50, ['Leadership', 'Komunikasi'], ['Bisnis & Wirausaha']);
         $this->pelatihan('Jaringan Komputer Dasar', 'draft', 'Infrastruktur', 'pemula', 'Fajar Nugroho', 15, 22, 30, ['Jaringan Komputer'], ['Teknik & Rekayasa']);
 
-        // Asesmen + soal
+        // Lowongan tambahan (target total 20-25)
+        $this->lowongan($p1, 'Full Stack Developer (Vue+Laravel)', 'aktif', 'Full-time', 6000000, 9000000, 55, [['Laravel', 'menengah'], ['Vue.js', 'menengah'], ['MySQL', 'menengah']], 's1', ['Teknologi Informasi']);
+        $this->lowongan($p1, 'Data Analyst', 'aktif', 'Full-time', 6500000, 9500000, 50, [['Python', 'menengah'], ['Analisis Data', 'menengah'], ['PostgreSQL', 'pemula']], 's1', ['Teknologi Informasi']);
+        $this->lowongan($p1, 'DevOps Engineer', 'aktif', 'Kontrak', 7000000, 10000000, 40, [['Linux', 'menengah'], ['Jaringan Komputer', 'menengah'], ['Python', 'pemula']], 's1', ['Teknik & Rekayasa']);
+        $this->lowongan($p2, 'Operator Produksi', 'aktif', 'Full-time', 2500000, 3200000, 30, [['Microsoft Office', 'pemula']], 'smk', ['Teknik & Rekayasa']);
+        $this->lowongan($p2, 'Staf HRD', 'aktif', 'Full-time', 3000000, 4500000, 45, [['Komunikasi', 'menengah'], ['Microsoft Office', 'menengah'], ['Leadership', 'pemula']], 's1', ['Bisnis & Wirausaha']);
+        $this->lowongan($p2, 'Staf Keuangan', 'aktif', 'Full-time', 3500000, 5000000, 35, [['Analisis Data', 'pemula'], ['Microsoft Office', 'mahir']], 's1', ['Keuangan & Akuntansi']);
+        $this->lowongan($p3, 'Teknisi Pertanian', 'aktif', 'Kontrak', 2800000, 3800000, 25, [['Microsoft Office', 'pemula']], 'smk', ['Agribisnis']);
+        $this->lowongan($p3, 'Data Entry & Administrasi', 'aktif', 'Part-time', 2000000, 2800000, 20, [['Microsoft Office', 'menengah'], ['Komunikasi', 'pemula']], 'smk', ['Keuangan & Akuntansi']);
+        $this->lowongan($p4, 'Graphic Designer', 'aktif', 'Full-time', 4000000, 6000000, 45, [['UI/UX Design', 'menengah'], ['Figma', 'menengah']], 'smk', ['Desain & Kreatif']);
+        $this->lowongan($p4, 'Social Media Specialist', 'aktif', 'Kontrak', 3500000, 5000000, 30, [['Digital Marketing', 'menengah'], ['Copywriting', 'pemula']], 'smk', ['Pemasaran Digital', 'Desain & Kreatif']);
+        $this->lowongan($p4, 'SEO & Content Writer', 'aktif', 'Part-time', 2500000, 3500000, 60, [['Copywriting', 'menengah'], ['Digital Marketing', 'pemula']], 'sma', ['Pemasaran Digital']);
+        $this->lowongan($p1, 'Mobile Developer (React Native)', 'aktif', 'Full-time', 6000000, 8500000, 50, [['React', 'menengah'], ['JavaScript', 'mahir']], 's1', ['Teknologi Informasi']);
+
+        // Pelatihan tambahan (target total 15-20)
+        $this->pelatihan('Pemrograman Python untuk Pemula', 'published', 'Pemrograman', 'pemula', 'Andi Wibowo', 5, 12, 35, ['Python', 'Analisis Data'], ['Teknologi Informasi']);
+        $this->pelatihan('Vue.js untuk Frontend Modern', 'published', 'Web Development', 'menengah', 'Rizki Pratama', 14, 21, 25, ['Vue.js', 'JavaScript'], ['Teknologi Informasi']);
+        $this->pelatihan('Pelatihan Microsoft Office Profesional', 'published', 'Produktivitas', 'pemula', 'Sari Dewi', 3, 5, 50, ['Microsoft Office'], ['Bisnis & Wirausaha', 'Keuangan & Akuntansi']);
+        $this->pelatihan('Komunikasi Bisnis & Public Speaking', 'published', 'Soft Skill', 'pemula', 'Hendra Wijaya', 10, 11, 40, ['Komunikasi', 'Leadership'], ['Bisnis & Wirausaha']);
+        $this->pelatihan('Teknik Jaringan & Keamanan Siber', 'published', 'Infrastruktur', 'menengah', 'Budi Santoso', 20, 27, 20, ['Jaringan Komputer', 'Linux'], ['Teknik & Rekayasa']);
+        $this->pelatihan('Desain Grafis dengan Figma', 'published', 'Desain', 'pemula', 'Rina Anggraini', 7, 14, 30, ['Figma', 'UI/UX Design'], ['Desain & Kreatif']);
+        $this->pelatihan('E-Commerce & Digital Selling', 'published', 'Pemasaran', 'pemula', 'Maya Putri', 15, 16, 45, ['Digital Marketing', 'Copywriting'], ['Pemasaran Digital', 'Bisnis & Wirausaha']);
+        $this->pelatihan('Analisis Data dengan Spreadsheet', 'published', 'Data', 'pemula', 'Dinda Sari', 8, 10, 35, ['Analisis Data', 'Microsoft Office'], ['Teknologi Informasi', 'Keuangan & Akuntansi']);
+        $this->pelatihan('React.js Advanced', 'published', 'Web Development', 'mahir', 'Fajar Nugroho', 25, 32, 15, ['React', 'JavaScript', 'Vue.js'], ['Teknologi Informasi']);
+        $this->pelatihan('Copywriting & Content Strategy', 'published', 'Pemasaran', 'pemula', 'Wulandari', 12, 13, 30, ['Copywriting', 'Digital Marketing'], ['Pemasaran Digital']);
         $asesmenMinat = Asesmen::create(['judul' => 'Asesmen Minat Karir', 'deskripsi' => 'Mengukur minat karir peserta.', 'tipe' => 'minat']);
         $soalSkala = ['1 - Sangat Tidak Setuju', '2 - Tidak Setuju', '3 - Netral', '4 - Setuju', '5 - Sangat Setuju'];
         $soalMinat = [

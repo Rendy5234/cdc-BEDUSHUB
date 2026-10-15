@@ -1,0 +1,35 @@
+# === Python Virtualenv ===
+venv/
+.venv/
+env/
+ENV/
+
+# === Python Cache ===
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.python-version
+
+# === Training Data (regenerate via `php artisan ml:export-dataset`) ===
+training_data/*.csv
+training_data/*.json
+training_data/*.parquet
+training_data/*.xlsx
+
+# === Model Artifacts (regenerate via `python train.py`) ===
+model/*.npz
+model/*.pkl
+model/*.joblib
+model/*.h5
+model/*.pt
+model/*.json
+model/*.bin
+
+# === Logs ===
+*.log
