@@ -1,3 +1,4 @@
+# === LARAVEL DEFAULT ===
 /.phpunit.cache
 /node_modules
 /public/build
@@ -21,40 +22,62 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-/.clinerules
 
-# cPanel deployment - jangan ignore .cpanel.yml
-# .cpanel.yml TIDAK di-ignore karena dibutuhkan untuk deployment
+# === AI TOOLS SETUP (personal) ===
+/.clinerules/
+/.cline/
+/memori.md
+/AGENTS.md
+/boost.json
+/phpstan.neon
+/.github/skills
 
-# Database SQLite (jangan commit database lokal)
+# === cPanel deployment ===
+# .cpanel.yml TIDAK di-ignore (dibutuhkan deployment)
+
+# === DATABASE ===
 /database/*.sqlite
 /database/*.sqlite-journal
 
-# File log
+# === LOGS ===
 /storage/logs/*.log
 
-# File backup
+# === BACKUP ===
 *.bak
 *.old
 *.orig
 *.save
 
-# File OS
+# === OS ===
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# File upload testing
+# === UPLOADS ===
 /public/uploads/*
 !/public/uploads/.gitkeep
 
-# File .env tambahan
+# === ENV TAMBAHAN ===
 .env.local
 .env.staging
 
-# Composer
+# === COMPOSER ===
 /composer.phar
 
-# Node
+# === NODE ===
 .npm
 .yarn
+
+# === ML / PYTHON ===
+/ml/venv/
+/ml/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+/ml/training_data/*.csv
+/ml/training_data/*.json
+/ml/training_data/*.parquet
+/ml/model/*.npz
+/ml/model/*.pkl
+/ml/model/*.json
