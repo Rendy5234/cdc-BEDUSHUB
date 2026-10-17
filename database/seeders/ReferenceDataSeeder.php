@@ -85,8 +85,39 @@ class ReferenceDataSeeder extends Seeder
             ['nama' => 'Jaringan Komputer', 'kategori' => 'Infrastruktur'],
             ['nama' => 'Komunikasi', 'kategori' => 'Soft Skill'],
             ['nama' => 'Leadership', 'kategori' => 'Soft Skill'],
+            // Ditambahkan saat eksperimen scaling: skill ini sudah dirujuk seeder konten
+            // namun belum ada di master data sehingga relasi skill-nya ter-skip diam-diam.
+            ['nama' => 'Copywriting', 'kategori' => 'Pemasaran'],
+            ['nama' => 'Linux', 'kategori' => 'Infrastruktur'],
+            ['nama' => 'Figma', 'kategori' => 'Desain'],
         ];
-        foreach ($skills as $s) {
+
+        // STEP 2b: skill spesifik tambahan.
+        // Mengapa: sinyal skill item sebelumnya hanya memakai 18 skill, sehingga skill
+        // generik (Komunikasi/Microsoft Office) mendominasi dan item sulit dibedakan.
+        // Skill spesifik di bawah menambah daya pisah antar item.
+        $skillsSpesifik = [
+            ['nama' => 'Docker', 'kategori' => 'Infrastruktur'],
+            ['nama' => 'Git', 'kategori' => 'Infrastruktur'],
+            ['nama' => 'REST API', 'kategori' => 'Framework'],
+            ['nama' => 'SEO', 'kategori' => 'Pemasaran'],
+            ['nama' => 'Google Analytics', 'kategori' => 'Pemasaran'],
+            ['nama' => 'Content Creation', 'kategori' => 'Pemasaran'],
+            ['nama' => 'Adobe Photoshop', 'kategori' => 'Desain'],
+            ['nama' => 'Prototyping', 'kategori' => 'Desain'],
+            ['nama' => 'Wireframing', 'kategori' => 'Desain'],
+            ['nama' => 'Akuntansi', 'kategori' => 'Keuangan'],
+            ['nama' => 'Excel Advanced', 'kategori' => 'Perkantoran'],
+            ['nama' => 'Perpajakan', 'kategori' => 'Keuangan'],
+            ['nama' => 'Audit', 'kategori' => 'Keuangan'],
+            ['nama' => 'Budgeting', 'kategori' => 'Keuangan'],
+            ['nama' => 'Rekrutmen', 'kategori' => 'SDM'],
+            ['nama' => 'Payroll', 'kategori' => 'SDM'],
+            ['nama' => 'Statistik', 'kategori' => 'Data'],
+            ['nama' => 'Tableau', 'kategori' => 'Data'],
+            ['nama' => 'Machine Learning', 'kategori' => 'Data'],
+        ];
+        foreach (array_merge($skills, $skillsSpesifik) as $s) {
             Skill::create($s);
         }
 
@@ -106,14 +137,16 @@ class ReferenceDataSeeder extends Seeder
             KategoriMinat::create($m);
         }
 
+        // STEP 2b: skill spesifik baru juga dikaitkan ke kategori minat
+        // agar relasi minat<->skill tetap konsisten dan tidak ada skill "yatim".
         $minatSkills = [
-            'Teknologi Informasi' => ['PHP', 'Laravel', 'JavaScript', 'React', 'Vue.js', 'MySQL', 'PostgreSQL', 'Python', 'Jaringan Komputer', 'Analisis Data'],
-            'Desain & Kreatif' => ['UI/UX Design'],
-            'Pemasaran Digital' => ['Digital Marketing', 'Analisis Data'],
-            'Bisnis & Wirausaha' => ['Komunikasi', 'Leadership'],
+            'Teknologi Informasi' => ['PHP', 'Laravel', 'JavaScript', 'React', 'Vue.js', 'MySQL', 'PostgreSQL', 'Python', 'Jaringan Komputer', 'Analisis Data', 'REST API', 'Git', 'Docker', 'Machine Learning', 'Statistik', 'Tableau'],
+            'Desain & Kreatif' => ['UI/UX Design', 'Figma', 'Adobe Photoshop', 'Prototyping', 'Wireframing'],
+            'Pemasaran Digital' => ['Digital Marketing', 'Analisis Data', 'SEO', 'Google Analytics', 'Content Creation', 'Copywriting'],
+            'Bisnis & Wirausaha' => ['Komunikasi', 'Leadership', 'Budgeting', 'Rekrutmen'],
             'Pendidikan' => ['Komunikasi', 'Leadership'],
-            'Teknik & Rekayasa' => ['Jaringan Komputer', 'Python'],
-            'Keuangan & Akuntansi' => ['Microsoft Office', 'Analisis Data'],
+            'Teknik & Rekayasa' => ['Jaringan Komputer', 'Python', 'Linux', 'Docker', 'Git'],
+            'Keuangan & Akuntansi' => ['Microsoft Office', 'Analisis Data', 'Akuntansi', 'Excel Advanced', 'Perpajakan', 'Audit', 'Budgeting', 'Payroll'],
         ];
         foreach ($minatSkills as $namaMinat => $namaSkills) {
             $minat = KategoriMinat::where('nama', $namaMinat)->first();

@@ -81,3 +81,7 @@ desktop.ini
 /ml/model/*.npz
 /ml/model/*.pkl
 /ml/model/*.json
+
+backup/
+ml/model/
+ml/training_data/

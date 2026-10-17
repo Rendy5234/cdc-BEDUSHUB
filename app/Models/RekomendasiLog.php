@@ -20,11 +20,14 @@ class RekomendasiLog extends Model
         'skor',
         'alasan',
         'aksi',
+        'model_version',
+        'position',
     ];
 
     protected $casts = [
         'item_id' => 'integer',
         'skor' => 'float',
+        'position' => 'integer',
     ];
 
     public function user(): BelongsTo

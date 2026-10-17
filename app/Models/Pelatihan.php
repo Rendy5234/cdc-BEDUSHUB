@@ -91,6 +91,34 @@ class Pelatihan extends Model
             });
     }
 
+    /**
+     * Pelatihan yang masih BISA DIDAFTAR untuk keperluan rekomendasi.
+     *
+     * Aturan bisnis: pada pelatihan, `tanggal_mulai` adalah tanggal acara dimulai.
+     * Begitu acara mulai (hari ini atau sudah lewat), pendaftaran ditutup. Jadi
+     * yang masih bisa didaftar adalah pelatihan yang acaranya BELUM dimulai.
+     *
+     * Sengaja TIDAK memakai filter `tanggal_selesai`: jika `tanggal_mulai` masih
+     * di masa depan, `tanggal_selesai` otomatis juga di masa depan.
+     *
+     * Catatan: scope ini terpisah dari `scopeTersediaUntukUser()` (aturan
+     * pendaftaran) karena keduanya punya makna bisnis berbeda.
+     */
+    public function scopeTersediaUntukRekomendasi(Builder $query): Builder
+    {
+        return $query
+            ->where('status', 'published')
+            ->whereNotNull('tanggal_mulai')
+            ->whereDate('tanggal_mulai', '>', now()->toDateString())
+            ->where(function (Builder $q) {
+                $q->whereNull('kuota')
+                    ->orWhereRaw(
+                        '(SELECT COUNT(*) FROM pendaftaran_pelatihan WHERE pendaftaran_pelatihan.pelatihan_id = pelatihan.id AND pendaftaran_pelatihan.status != ? AND pendaftaran_pelatihan.deleted_at IS NULL) < pelatihan.kuota',
+                        ['ditolak'],
+                    );
+            });
+    }
+
     public function skills(): BelongsToMany
     {
         return $this->belongsToMany(Skill::class, 'pelatihan_skill')->withTimestamps();

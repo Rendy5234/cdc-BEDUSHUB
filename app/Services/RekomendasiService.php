@@ -187,6 +187,8 @@ class RekomendasiService
         float $skor,
         string $alasan,
         string $aksi = 'view',
+        ?string $modelVersion = null,
+        ?int $position = null,
     ): RekomendasiLog {
         return RekomendasiLog::create([
             'user_id' => $user->id,
@@ -195,7 +197,75 @@ class RekomendasiService
             'skor' => $skor,
             'alasan' => $alasan,
             'aksi' => $aksi,
+            'model_version' => $modelVersion,
+            'position' => $position,
         ]);
+    }
+
+    /**
+     * True bila rekomendasi user+item+tipe ini sudah tercatat hari ini.
+     *
+     * Dipakai sebagai guard agar widget yang di-render berkali-kali oleh Livewire
+     * tidak membanjiri tabel rekomendasi_log.
+     */
+    public function alreadyLoggedToday(User $user, string $tipeItem, int $itemId, ?string $modelVersion): bool
+    {
+        return RekomendasiLog::query()
+            ->where('user_id', $user->id)
+            ->where('tipe_item', $tipeItem)
+            ->where('item_id', $itemId)
+            ->when(
+                $modelVersion === null,
+                fn ($q) => $q->whereNull('model_version'),
+                fn ($q) => $q->where('model_version', $modelVersion),
+            )
+            ->whereDate('created_at', now()->toDateString())
+            ->exists();
+    }
+
+    /**
+     * Top-up rule-based untuk satu tipe item saja (tanpa tulis log/notifikasi).
+     *
+     * Dipakai widget sebagai pelengkap saat hasil ML kurang dari target atau
+     * item hasil ML tidak lagi tersedia.
+     *
+     * @param  array<int, int>  $excludeIds  item yang sudah ada (tidak diulang)
+     * @return array<int, array<string, mixed>>
+     */
+    public function ruleTopUp(User $user, string $tipeItem, array $excludeIds = [], int $limit = 5): array
+    {
+        if ($limit <= 0) {
+            return [];
+        }
+
+        $payload = $this->recommendationPayload($user);
+        $userSkills = collect($payload['user']['skills'])->keyBy('skill_id');
+        $sumber = match ($tipeItem) {
+            'lowongan' => $payload['catalog']['lowongan'],
+            'pelatihan' => $payload['catalog']['pelatihan'],
+            default => [],
+        };
+
+        $excludeIds = array_map('intval', $excludeIds);
+
+        return collect($sumber)
+            ->reject(fn (array $item) => in_array((int) $item['id'], $excludeIds, true))
+            ->map(function (array $item) use ($userSkills, $tipeItem): array {
+                $skor = $this->skillOverlapScore($userSkills, collect($item['skills']));
+
+                return [
+                    'tipe_item' => $tipeItem,
+                    'item_id' => (int) $item['id'],
+                    'judul' => $item['judul'],
+                    'skor' => $skor,
+                    'alasan' => $this->alasanSkill($skor),
+                ];
+            })
+            ->filter(fn (array $item) => $item['skor'] > 0)
+            ->sortByDesc('skor')
+            ->take($limit)
+            ->values()
+            ->all();
     }
 
     /**
@@ -203,7 +273,7 @@ class RekomendasiService
      *
      * @return array<int, array<string, mixed>>
      */
-    public function baselineRecommend(User $user, int $limit = 5): array
+    public function baselineRecommend(User $user, int $limit = 5, bool $persist = true): array
     {
         $payload = $this->recommendationPayload($user);
 
@@ -244,6 +314,10 @@ class RekomendasiService
             ->sortByDesc('skor')
             ->take($limit)
             ->values();
+
+        if (! $persist) {
+            return $recommendations->all();
+        }
 
         foreach ($recommendations as $rec) {
             $this->storeRecommendation(

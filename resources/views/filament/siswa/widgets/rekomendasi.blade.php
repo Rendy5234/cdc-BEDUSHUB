@@ -24,7 +24,10 @@
                             style="width: 11rem;"
                             class="group flex shrink-0 cursor-pointer flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-white/10 dark:bg-white/5"
                         >
-                            <div style="aspect-ratio: 3 / 4;" class="w-full overflow-hidden bg-gray-100 dark:bg-white/5">
+                            <div style="position: relative; aspect-ratio: 3 / 4;" class="w-full overflow-hidden bg-gray-100 dark:bg-white/5">
+                                <span style="position: absolute; top: 6px; left: 6px; z-index: 10; background: {{ $rec['source'] === 'ml' ? '#16a34a' : '#6b7280' }}; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; line-height: 1.4;">
+                                    {{ $rec['source'] === 'ml' ? 'ML' : 'Rule' }}
+                                </span>
                                 @if ($rec['imageUrl'])
                                     <img
                                         src="{{ $rec['imageUrl'] }}"
@@ -77,7 +80,10 @@
                             style="width: 11rem;"
                             class="group flex shrink-0 cursor-pointer flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-white/10 dark:bg-white/5"
                         >
-                            <div style="aspect-ratio: 3 / 4;" class="w-full overflow-hidden bg-gray-100 dark:bg-white/5">
+                            <div style="position: relative; aspect-ratio: 3 / 4;" class="w-full overflow-hidden bg-gray-100 dark:bg-white/5">
+                                <span style="position: absolute; top: 6px; left: 6px; z-index: 10; background: {{ $rec['source'] === 'ml' ? '#16a34a' : '#6b7280' }}; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; line-height: 1.4;">
+                                    {{ $rec['source'] === 'ml' ? 'ML' : 'Rule' }}
+                                </span>
                                 @if ($rec['imageUrl'])
                                     <img
                                         src="{{ $rec['imageUrl'] }}"
