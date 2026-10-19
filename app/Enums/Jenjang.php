@@ -26,6 +26,22 @@ enum Jenjang: string implements HasLabel
     }
 
     /**
+     * Urutan numerik untuk perbandingan jenjang pendidikan (semakin tinggi = semakin mahir).
+     * Digunakan oleh RekomendasiService untuk gap analysis jenjang.
+     */
+    public function order(): int
+    {
+        return match ($this) {
+            self::SMA => 1,
+            self::SMK => 2,
+            self::D3 => 3,
+            self::S1 => 4,
+            self::S2 => 5,
+            self::S3 => 6,
+        };
+    }
+
+    /**
      * Seluruh jenjang (value => label).
      *
      * @return array<string, string>

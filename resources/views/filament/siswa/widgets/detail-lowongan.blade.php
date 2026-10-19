@@ -96,5 +96,41 @@
                 </p>
             </div>
         @endif
+
+        {{-- Gap Analysis Warning --}}
+        @if ($gap && $gap['has_gap'])
+            <div style="margin-top: 1rem; padding: 0.85rem 1rem; border: 1px solid #fecaca; border-radius: 0.5rem; background: #fee2e2;">
+                <p style="color: #991b1b; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.4rem;">
+                    ⚠ Butuh Skill:
+                    @foreach ($gap['missing_skills'] as $i => $ms)
+                        @if ($i > 0), @endif
+                        {{ $ms['nama'] }}@if ($ms['level_min']) ({{ $ms['level_min'] }}) @endif
+                    @endforeach
+                </p>
+
+                @if (! empty($gap['recommended_trainings']))
+                    <p style="color: #7f1d1d; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                        Ikuti pelatihan ini dulu untuk menutup gap kemampuan:
+                    </p>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        @foreach ($gap['recommended_trainings'] as $pt)
+                            <li style="margin-bottom: 0.2rem;">
+                                <a href="{{ \App\Filament\Siswa\Resources\PendaftaranPelatihanResource::getUrl('create', ['pelatihan_id' => $pt['id']]) }}"
+                                   style="color: #7f1d1d; text-decoration: underline; font-size: 0.85rem;">
+                                    → {{ $pt['judul'] }}
+                                </a>
+                                @if ($pt['topik'])
+                                    <span style="color: #7f1d1d; font-size: 0.8rem;">(Topik: {{ $pt['topik'] }})</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p style="color: #7f1d1d; font-size: 0.85rem;">
+                        Belum ada pelatihan yang cocok untuk menutup gap skill ini.
+                    </p>
+                @endif
+            </div>
+        @endif
     </div>
 @endif

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Siswa\Widgets;
 
+use App\Enums\Jenjang;
 use App\Filament\Siswa\Resources\LamaranResource;
 use App\Filament\Siswa\Resources\PendaftaranPelatihanResource;
 use App\Models\Lowongan;
@@ -38,6 +39,8 @@ class RekomendasiWidget extends Widget implements HasActions, HasForms
 
     public ?Pelatihan $selectedPelatihan = null;
 
+    public ?array $selectedGap = null;
+
     protected MLRecommendationService $mlService;
 
     protected RekomendasiService $rekomendasiService;
@@ -69,7 +72,7 @@ class RekomendasiWidget extends Widget implements HasActions, HasForms
      * 3. Catat ke rekomendasi_log dengan guard 1 log per item per hari, tanpa
      *    menghapus log lama (log lama tetap jadi riwayat era "Rule").
      *
-     * @return Collection<int, array{item: Lowongan|Pelatihan, imageUrl: string|null, source: string, skor: float, rank: int}>
+     * @return Collection<int, array{item: Lowongan|Pelatihan, imageUrl: string|null, source: string, skor: float, rank: int, gap: array|null}>
      */
     protected function rekomendasiUntuk(int $userId, string $tipeItem): Collection
     {
@@ -95,10 +98,24 @@ class RekomendasiWidget extends Widget implements HasActions, HasForms
             );
         }
 
+        // --- "Satpam Terakhir": validasi jenjang sebelum render ---
+        // Tangkap semua hasil (ML + Rule) yang melewatkan filter, agar
+        // lowongan yang butuh jenjang di atas kemampuan user tidak pernah
+        // sampai ke layer tampilan.
+        $hasil = $hasil
+            ->filter(fn (array $rec) => ! ($rec['item'] instanceof Lowongan) || $this->isJenjangCukup($user, $rec['item']))
+            ->values();
+
         return $hasil->take(self::LIMIT)
             ->values()
             ->map(function (array $rec) use ($user, $tipeItem): array {
                 $this->catatLog($user, $tipeItem, $rec);
+
+                // Analisis gap hanya untuk lowongan (bukan pelatihan)
+                $gap = null;
+                if ($tipeItem === 'lowongan' && $rec['item'] instanceof Lowongan) {
+                    $gap = $this->rekomendasiService->analyzeGap($user, $rec['item']);
+                }
 
                 return [
                     'item' => $rec['item'],
@@ -106,6 +123,7 @@ class RekomendasiWidget extends Widget implements HasActions, HasForms
                     'source' => $rec['source'],
                     'skor' => $rec['skor'],
                     'rank' => $rec['rank'],
+                    'gap' => $gap,
                 ];
             });
     }
@@ -265,7 +283,14 @@ class RekomendasiWidget extends Widget implements HasActions, HasForms
 
     public function openLowonganDetail(int $id): void
     {
+        $user = User::find((int) auth()->id());
         $this->selectedLowongan = Lowongan::query()->tersediaUntukUser()->find($id);
+
+        if ($this->selectedLowongan && $user) {
+            $this->selectedGap = $this->rekomendasiService->analyzeGap($user, $this->selectedLowongan);
+        } else {
+            $this->selectedGap = null;
+        }
 
         if ($this->selectedLowongan) {
             $this->mountAction('detailLowongan');
@@ -302,14 +327,22 @@ class RekomendasiWidget extends Widget implements HasActions, HasForms
                 'lowongan' => $this->selectedLowongan,
                 'imageUrl' => $this->imageUrl($this->selectedLowongan?->thumbnail)
                     ?? $this->imageUrl($this->selectedLowongan?->perusahaan?->logo),
+                'gap' => $this->selectedGap,
             ]))
             ->modalFooterActions([
                 Action::make('daftarLowongan')
-                    ->label('Daftar Sekarang')
-                    ->color('primary')
-                    ->url(fn () => $this->selectedLowongan
-                        ? LamaranResource::getUrl('create', ['lowongan_id' => $this->selectedLowongan->id])
-                        : null),
+                    ->label(fn (): string => ($this->selectedGap['has_gap'] ?? false)
+                        ? 'Ikuti Pelatihan Terlebih Dahulu'
+                        : 'Daftar Sekarang')
+                    ->color(fn (): string => ($this->selectedGap['has_gap'] ?? false)
+                        ? 'warning'
+                        : 'primary')
+                    ->disabled(fn (): bool => ($this->selectedGap['has_gap'] ?? false))
+                    ->url(fn () => ($this->selectedGap['has_gap'] ?? false)
+                        ? null
+                        : ($this->selectedLowongan
+                            ? LamaranResource::getUrl('create', ['lowongan_id' => $this->selectedLowongan->id])
+                            : null)),
                 Action::make('tutupLowongan')
                     ->label('Tutup')
                     ->color('gray')
@@ -339,5 +372,57 @@ class RekomendasiWidget extends Widget implements HasActions, HasForms
                     ->cancelParentActions(),
             ])
             ->modalSubmitAction(false);
+    }
+
+    /**
+     * "Satpam Terakhir" — pastikan jenjang pendidikan user cukup untuk lowongan.
+     *
+     * Aturan:
+     * - Jika lowongan.pendidikan kosong/null → semua jenjang boleh (true).
+     * - Bandingkan secara case-insensitive (strtolower).
+     * - User diterima jika jenjangnya >= setidaknya satu syarat yang valid.
+     */
+    protected function isJenjangCukup(User $user, Lowongan $lowongan): bool
+    {
+        // Ambil jenjang user dari profile
+        $userJenjang = $user->profile?->jenjang;
+        if (! $userJenjang) {
+            // User belum punya jenjang — tidak bisa diverifikasi, biarkan lolos
+            // (rule-based sudah menanganakan jika perlu)
+            return true;
+        }
+
+        // Ambil persyaratan jenjang lowongan
+        $requiredJenjang = $lowongan->pendidikan;
+        if (empty($requiredJenjang)) {
+            // Lowongan tidak mensyaratkan jenjang tertentu → semua boleh
+            return true;
+        }
+
+        // Normalisasi ke array (defensif: bisa jadi string JSON)
+        if (is_string($requiredJenjang)) {
+            $requiredJenjang = json_decode($requiredJenjang, true) ?: [];
+        }
+        $requiredJenjang = (array) $requiredJenjang;
+
+        // Normalisasi ke lowercase untuk case-insensitive
+        $userOrder = Jenjang::tryFrom(strtolower((string) $userJenjang))?->order();
+
+        if ($userOrder === null) {
+            // Jenjang user tidak dikenali → biarkan lolos (tidak blokir)
+            return true;
+        }
+
+        foreach ($requiredJenjang as $req) {
+            $reqOrder = Jenjang::tryFrom(strtolower((string) $req))?->order();
+
+            if ($reqOrder !== null && $userOrder >= $reqOrder) {
+                // User setinggi setidaknya satu syarat yang valid
+                return true;
+            }
+        }
+
+        // User di bawah semua syarat yang valid → blokir
+        return false;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Jenjang;
 use App\Enums\SkillLevel;
 use App\Models\Lowongan;
 use App\Models\Notifikasi;
@@ -278,12 +279,49 @@ class RekomendasiService
         $payload = $this->recommendationPayload($user);
 
         $userSkills = collect($payload['user']['skills'])->keyBy('skill_id');
+        $userJenjang = $payload['user']['profile']['jenjang'] ?? null;
         $recommendations = [];
 
         foreach ($payload['catalog']['lowongan'] as $lowongan) {
             $skor = $this->skillOverlapScore($userSkills, collect($lowongan['skills']));
             if ($skor <= 0) {
                 continue;
+            }
+
+            // --- Filter ketat jenjang pendidikan (hanya Lowongan) ---
+            // Jika lowongan mensyaratkan pendidikan tertentu dan jenjang user
+            // di bawah semua syarat, jangan rekomendasikan.
+            // Jika jenjang user setinggi setidaknya satu syarat, beri bonus +20.
+            //
+            // Defensive: $lowongan['pendidikan'] memang array (di-cast di model),
+            // tapi bisa jadi string JSON bila diproses lewat payload non-model.
+            $rawPendidikan = $lowongan['pendidikan'] ?? [];
+            if (is_string($rawPendidikan)) {
+                $rawPendidikan = json_decode($rawPendidikan, true) ?? [];
+            }
+            $requiredJenjang = (array) $rawPendidikan;
+
+            if (! empty($requiredJenjang)) {
+                // Normalisasi ke lowercase agar case-insensitive (SMA, sma, SmA sama)
+                $userOrder = Jenjang::tryFrom(strtolower((string) $userJenjang))?->order();
+                if ($userOrder !== null) {
+                    $validReqs = [];
+                    foreach ($requiredJenjang as $req) {
+                        $reqOrder = Jenjang::tryFrom(strtolower((string) $req))?->order();
+                        if ($reqOrder !== null) {
+                            $validReqs[] = $reqOrder;
+                        }
+                    }
+
+                    if (! empty($validReqs)) {
+                        $minRequired = min($validReqs);
+                        // User harus setinggi setidaknya jenjang minimum yang diminta
+                        if ($userOrder < $minRequired) {
+                            continue;
+                        }
+                        $skor += 20.0;
+                    }
+                }
             }
 
             $recommendations[] = [
@@ -338,6 +376,80 @@ class RekomendasiService
         }
 
         return $recommendations->all();
+    }
+
+    /**
+     * Analisis gap antara skill user dan kebutuhan lowongan.
+     *
+     * Dipanggil untuk setiap lowongan yang direkomendasikan sehingga widget
+     * dapat menampilkan peringatan skill kurang + pelatihan penutup.
+     *
+     * @return array{has_gap: bool, missing_skills: array<int, array{skill_id: int, nama: string, level_min: string|null}>, recommended_trainings: array<int, array{id: int, judul: string, topik: string|null}>}
+     */
+    public function analyzeGap(User $user, Lowongan $lowongan): array
+    {
+        $userSkillLevels = $user->userSkills
+            ->keyBy('skill_id')
+            ->map(fn ($us) => [
+                'level' => $us->level,
+                'level_order' => SkillLevel::tryFrom($us->level)?->order() ?? 0,
+            ]);
+
+        $missingSkills = [];
+
+        foreach ($lowongan->skills as $skill) {
+            $levelMin = $skill->pivot->level_min ?? null;
+            $levelMinOrder = SkillLevel::tryFrom($levelMin)?->order() ?? null;
+            $userSkill = $userSkillLevels->get($skill->id);
+
+            if (! $userSkill) {
+                // Skill benar-benar tidak dimiliki user
+                $missingSkills[] = [
+                    'skill_id' => $skill->id,
+                    'nama' => $skill->nama,
+                    'level_min' => $levelMin,
+                ];
+
+                continue;
+            }
+
+            // Skill dimiliki, tapi levelnya di bawah level_min
+            if ($levelMinOrder !== null && ($userSkill['level_order'] < $levelMinOrder)) {
+                $missingSkills[] = [
+                    'skill_id' => $skill->id,
+                    'nama' => $skill->nama,
+                    'level_min' => $levelMin,
+                ];
+            }
+        }
+
+        // Cari pelatihan yang mengajarkan skill yang kurang
+        $missingSkillIds = collect($missingSkills)->pluck('skill_id')->all();
+
+        $recommendedTrainings = [];
+        if (! empty($missingSkillIds)) {
+            $recommendedTrainings = Pelatihan::query()
+                ->tersediaUntukRekomendasi()
+                ->whereHas('skills', function ($q) use ($missingSkillIds) {
+                    $q->whereIn('skills.id', $missingSkillIds);
+                })
+                ->with('skills')
+                ->limit(10)
+                ->get()
+                ->map(fn (Pelatihan $p) => [
+                    'id' => $p->id,
+                    'judul' => $p->judul,
+                    'topik' => $p->topik,
+                ])
+                ->values()
+                ->all();
+        }
+
+        return [
+            'has_gap' => ! empty($missingSkills),
+            'missing_skills' => $missingSkills,
+            'recommended_trainings' => $recommendedTrainings,
+        ];
     }
 
     /**

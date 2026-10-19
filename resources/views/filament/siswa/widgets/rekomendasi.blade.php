@@ -48,6 +48,17 @@
                                 <p style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                     {{ $item->perusahaan?->nama }}
                                 </p>
+
+                                {{-- Gap warning on card --}}
+                                @if ($rec['gap'] && $rec['gap']['has_gap'])
+                                    <div style="margin-top: 0.3rem; padding: 0.4rem 0.6rem; border: 1px solid #fecaca; border-radius: 0.25rem; background: #fee2e2; font-size: 0.7rem; color: #991b1b;">
+                                        <span style="font-weight: 600;">⚠ Butuh Skill:</span>
+                                        @foreach ($rec['gap']['missing_skills'] as $i => $ms)
+                                            @if ($i > 0), @endif
+                                            {{ $ms['nama'] }}
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endforeach
