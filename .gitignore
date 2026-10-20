@@ -1,5 +1,6 @@
 # === LARAVEL DEFAULT ===
 /.phpunit.cache
+phpstand/*
 /node_modules
 /public/build
 /public/hot
