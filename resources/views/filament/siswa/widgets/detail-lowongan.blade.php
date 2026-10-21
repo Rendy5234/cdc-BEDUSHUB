@@ -109,22 +109,44 @@
                 </p>
 
                 @if (! empty($gap['recommended_trainings']))
-                    <p style="color: #7f1d1d; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                    <p style="color: #7f1d1d; font-size: 0.85rem; margin-bottom: 0.5rem;">
                         Ikuti pelatihan ini dulu untuk menutup gap kemampuan:
                     </p>
-                    <ul style="list-style: none; padding: 0; margin: 0;">
-                        @foreach ($gap['recommended_trainings'] as $pt)
-                            <li style="margin-bottom: 0.2rem;">
-                                <a href="{{ \App\Filament\Siswa\Resources\PendaftaranPelatihanResource::getUrl('create', ['pelatihan_id' => $pt['id']]) }}"
-                                   style="color: #7f1d1d; text-decoration: underline; font-size: 0.85rem;">
-                                    → {{ $pt['judul'] }}
-                                </a>
-                                @if ($pt['topik'])
-                                    <span style="color: #7f1d1d; font-size: 0.8rem;">(Topik: {{ $pt['topik'] }})</span>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
+                    {{-- Flex horizontal scrollable — kartu kontras di atas background peringatan pink (inline CSS) --}}
+                    <div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory;">
+                            @php
+                                // Dukung array rekomendasi (str) maupun koleksi model Pelatihan (object)
+                                $daftarPt = is_array($gap['recommended_trainings'] ?? [])
+                                    ? $gap['recommended_trainings']
+                                    : (is_countable($gap['recommended_trainings'] ?? null) ? $gap['recommended_trainings']->all() : []);
+                            @endphp
+                            @foreach ($daftarPt as $pt)
+                                @php
+                                    $judul = is_object($pt) ? ($pt->judul ?? '') : ($pt['judul'] ?? '');
+                                    $topik = is_object($pt) ? ($pt->topik ?? '') : ($pt['topik'] ?? '');
+                                    $id    = is_object($pt) ? ($pt->id ?? '') : ($pt['id'] ?? '');
+                                @endphp
+                                <div
+                                    style="min-width: 200px; max-width: 200px; flex-shrink: 0; scroll-snap-align: start; background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; flex-grow: 0;"
+                                    class="dark:bg-gray-800 dark:border-gray-600"
+                                >
+                                    <div style="flex: 1;">
+                                        <p style="font-weight: bold; color: #111827; margin-bottom: 4px; font-size: 0.9rem;">
+                                            {{ $judul }}
+                                        </p>
+                                        @if (! empty($topik))
+                                            <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 12px;">
+                                                {{ $topik }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                    <a href="{{ \App\Filament\Siswa\Resources\PendaftaranPelatihanResource::getUrl('create', ['pelatihan_id' => $id]) }}"
+                                       style="color: #2563eb; font-weight: 600; text-decoration: none; font-size: 0.85rem;">
+                                        Lihat Detail
+                                    </a>
+                                </div>
+                            @endforeach
+                    </div>
                 @else
                     <p style="color: #7f1d1d; font-size: 0.85rem;">
                         Belum ada pelatihan yang cocok untuk menutup gap skill ini.

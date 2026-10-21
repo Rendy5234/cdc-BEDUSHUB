@@ -299,7 +299,7 @@ class RekomendasiWidget extends Widget implements HasActions, HasForms
 
     public function openPelatihanDetail(int $id): void
     {
-        $this->selectedPelatihan = Pelatihan::query()->tersediaUntukUser()->find($id);
+        $this->selectedPelatihan = Pelatihan::query()->tersediaUntukRekomendasi()->find($id);
 
         if ($this->selectedPelatihan) {
             $this->mountAction('detailPelatihan');

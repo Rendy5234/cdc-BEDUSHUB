@@ -453,6 +453,14 @@ class RekomendasiService
     }
 
     /**
+     * Hitung skor kecocokan skill antara user dan sebuah item (lowongan/pelatihan).
+     *
+     * Aturan:
+     * - User harus memiliki skill yang sama.
+     * - Jika item menentukan level minimum (level_min), user harus memiliki level
+     *   >= level_min; bila tidak, skill ini tidak dihitung (skor tetap 0 untuk skill itu).
+     * - Setiap skill yang memenuhi: +1.0 poin dasar + bonus +0.5.
+     *
      * @param  Collection<int, array<string, mixed>>  $userSkills
      * @param  Collection<int, array<string, mixed>>  $itemSkills
      */
@@ -466,12 +474,19 @@ class RekomendasiService
                 continue;
             }
 
-            $total += 1.0;
-
             $levelMin = isset($itemSkill['level_min'])
                 ? SkillLevel::tryFrom($itemSkill['level_min'])
                 : null;
             $userLevel = SkillLevel::tryFrom($userSkill['level']);
+
+            // Hanya beri poin jika user memenuhi level minimum yang diminta.
+            // Jika level user lebih rendah dari level_min, lewati skill ini sepenuhnya
+            // agar item dengan syarat skill belum terpenuhi tidak masuk rekomendasi.
+            if ($levelMin !== null && $userLevel !== null && $userLevel->order() < $levelMin->order()) {
+                continue;
+            }
+
+            $total += 1.0;
 
             if ($levelMin && $userLevel && $userLevel->order() >= $levelMin->order()) {
                 $total += 0.5;
